@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#0b0f2a"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="#ff2d95" stroke-width="14"/>
+  <!-- taco shell -->
+  <path d="M86 300a170 170 0 0 1 340 0v60H86z" fill="#c98a1c"/>
+  <path d="M100 300a156 156 0 0 1 312 0v46H100z" fill="#f5c04a"/>
+  <!-- fillings -->
+  <path d="M118 300c20-40 60-70 138-70s118 30 138 70z" fill="#6b3a1e"/>
+  <circle cx="170" cy="286" r="18" fill="#e9442f"/><circle cx="256" cy="268" r="20" fill="#8bc34a"/><circle cx="342" cy="286" r="18" fill="#e9442f"/>
+  <circle cx="213" cy="272" r="13" fill="#fff6c8"/><circle cx="299" cy="272" r="13" fill="#fff6c8"/>
+  <path d="M150 300c40-24 80-30 106-30s66 6 106 30" stroke="#3e9d3a" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <!-- neon word -->
+  <text x="256" y="430" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="78" letter-spacing="6" fill="#ffd60a" stroke="#ffd60a" stroke-width="2">TACOS</text>
+</svg>

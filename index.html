@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="description" content="Run a late-night taco stand outside the bars on Main Street. 20 levels, three languages.">
+<meta name="theme-color" content="#0b0f2a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Taco Nights">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Taco Nights</title>
+<style>
+/* Single committed look: a neon-lit night street. Dark everywhere, by choice. */
+:root{--acc:#ffd60a;--pink:#ff2d95;--cyan:#2ee6ff;--lime:#b6ff3b;--panel:#1e2a2f;--panel2:#15202a;--bg:#07080f;--fg:#fff;color-scheme:dark}
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#07080f;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;overflow:hidden;color:#fff;touch-action:manipulation;overscroll-behavior:none}
+#rotate{position:fixed;inset:0;background:#07080f;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;font-weight:700}
+#rotate .ph{width:46px;height:80px;border:4px solid var(--acc);border-radius:10px;animation:rot 1.6s ease-in-out infinite alternate}
+@media (orientation:portrait) and (max-width:900px){#rotate{display:flex}}
+@keyframes rot{from{transform:rotate(0)}to{transform:rotate(-90deg)}}
+#moneyPill{background:linear-gradient(90deg,#2d6a3f var(--fill,0%),#1c2033 var(--fill,0%));transition:background .3s}
+#moneyPill.hit{border-color:#5ad36a;box-shadow:0 0 10px #5ad36a66}
+#goalBanner{position:absolute;left:50%;top:62px;transform:translateX(-50%);background:#1f3a2a;border:1px solid #5ad36a;color:#8ff5a0;border-radius:999px;padding:6px 16px;font-weight:700;font-size:13px;z-index:6;cursor:pointer;display:none;white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+#goalBanner.show{display:block;animation:dropin .4s ease-out}
+@keyframes dropin{from{transform:translateX(-50%) translateY(-20px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+.rating{color:var(--acc);font-size:12px;letter-spacing:1px;line-height:1}
+.rating.dim{color:#434a75}
+.lvl .rating{font-size:9px;display:block;margin-top:-2px}
+.bigstars{font-size:40px;color:var(--acc);letter-spacing:4px;margin:4px 0}
+.bigstars .off{color:#434a75}
+button{font-family:inherit}
+#game{position:absolute;left:50%;top:50%;width:1100px;height:700px;transform-origin:center;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.7);background:#0b0f2a}
+
+/* ---------- HUD ---------- */
+#hud{position:absolute;left:0;top:0;right:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:linear-gradient(#141827,#0c0f1c);border-bottom:2px solid var(--pink);z-index:5}
+.pill{background:#1c2033;border:1px solid #33395a;border-radius:999px;padding:6px 12px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.pill small{opacity:.6;font-weight:600;font-size:12px}
+#timeWrap{flex:1;height:14px;background:#1c2033;border-radius:999px;overflow:hidden;border:1px solid #33395a;min-width:80px}
+#timeBar{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));width:100%}
+.hbtn{background:#262b45;border:1px solid #434a75;color:#fff;border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap}
+.hbtn:hover{background:#333a5e}
+#radioBtn.on{background:var(--acc);color:#2a1a00;border-color:#fff1a8;animation:pulse 1s infinite}
+#radioBtn:disabled{opacity:.4;cursor:default;animation:none}
+#strikes{display:flex;gap:4px}
+#strikes i{width:16px;height:16px;border-radius:50%;background:#33395a;display:inline-block;border:2px solid #434a75}
+#strikes i.on{background:#ff3b4a;border-color:#ff8a8e;box-shadow:0 0 8px #ff3b4a}
+
+/* ---------- Street ---------- */
+#street{position:absolute;left:0;top:56px;right:0;height:300px;overflow:hidden;background:#1a1448}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+#scene .bulbs{animation:twinkle 1.4s infinite alternate}
+/* the cart's own striped canopy, seen from behind the counter */
+.canopy{position:absolute;left:0;right:0;top:0;height:24px;background:repeating-linear-gradient(90deg,#d7263d 0 48px,#f7f1e3 48px 96px);z-index:3;box-shadow:0 6px 16px rgba(0,0,0,.55)}
+.canopy:after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:10px;background:radial-gradient(circle at 24px 0,#f7f1e3 0 9px,transparent 10px) 48px 0/96px 10px,radial-gradient(circle at 24px 0,#d7263d 0 9px,transparent 10px) 0 0/48px 10px}
+.canopy span{position:absolute;left:50%;top:2px;transform:translateX(-50%);background:#1b1b2e;color:var(--acc);padding:1px 14px;border-radius:8px;font-weight:900;letter-spacing:3px;font-size:12px;border:2px solid var(--acc);text-shadow:0 0 8px var(--acc);white-space:nowrap}
+.lights{position:absolute;left:0;right:0;top:38px;height:14px;background:radial-gradient(circle at 50% 50%,#fff3b0 0 3px,transparent 4px) 0 0/40px 14px;z-index:3;animation:twinkle 1.6s infinite alternate}
+.post{position:absolute;top:22px;bottom:0;width:14px;background:linear-gradient(90deg,#4a141c,#a12a3a 45%,#4a141c);z-index:3;box-shadow:2px 0 6px rgba(0,0,0,.5)}
+.post.l{left:18px}.post.r{right:18px}
+#counterEdge{position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(90deg,transparent 0 118px,#4a2a10 118px 120px),linear-gradient(#a8743a,#6b4320);z-index:4;box-shadow:0 -4px 14px rgba(0,0,0,.6)}
+
+.cust{position:absolute;bottom:14px;width:180px;height:260px;cursor:pointer;z-index:2;transition:transform .15s}
+.cust:hover .avatar{transform:translateY(-3px)}
+.cust.enter{animation:walkin .5s ease-out}
+.cust.out{animation:leaveHappy .55s forwards;pointer-events:none}
+.cust.storm{animation:storm .7s forwards;pointer-events:none}
+.cust.angry .avatar{animation:tremble .22s infinite}
+.cust.shake{animation:shake .4s}
+.avatar{position:absolute;bottom:0;left:50px;width:80px;height:100px;transition:transform .15s}
+.meter{position:absolute;left:52px;bottom:108px;width:76px;height:9px;background:rgba(0,0,0,.55);border-radius:5px;border:1px solid rgba(255,255,255,.35)}
+.meter i{display:block;height:100%;border-radius:5px;background:#5ad36a;width:100%}
+.bubble{position:absolute;left:0;right:0;top:0;background:#fff8ec;color:#222;border-radius:14px;padding:8px 8px 6px;box-shadow:0 6px 16px rgba(0,0,0,.5);min-height:70px}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;border:8px solid transparent;border-top-color:#fff8ec;border-bottom:0}
+.oline{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.cname{font-size:11px;font-weight:700;opacity:.55;text-align:center;margin-top:4px}
+.oitems{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:6px}
+
+/* ---------- Ingredient chips ---------- */
+.ing{width:40px;height:40px;position:relative;flex:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.ing svg{width:100%;height:100%;display:block;overflow:visible}
+.ing.sm{width:28px;height:28px}
+.ing b{position:absolute;right:-7px;bottom:-7px;background:#222;color:#fff;border-radius:999px;font-size:11px;line-height:1;padding:3px 5px;border:2px solid #fff;font-weight:800}
+.lvls{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:8px auto 12px;max-width:560px}
+.lvl{height:36px;border-radius:8px;border:1px solid #434a75;background:#1c2033;color:#fff;font-weight:800;cursor:pointer;font-size:14px}
+.lvl:hover{border-color:var(--acc)}
+.lvl.locked{opacity:.3;cursor:default}
+.lvl.cur{background:var(--acc);color:#2a1a00;border-color:#fff1a8}
+.lvl.done{background:#1f3a2a;border-color:#3f7a52;color:#8ff5a0}
+
+.bicon{display:inline-block;flex:none}
+.bicon.corn{border-radius:50%;width:34px;height:34px;background:radial-gradient(circle at 40% 35%,#ffe28a,#e0a93c);border:2px solid #b8832a}
+.bicon.flour{border-radius:50%;width:38px;height:38px;background:radial-gradient(circle at 40% 35%,#fff4dc,#e9cfa0);border:2px solid #c9a46f;box-shadow:inset 0 0 0 3px #f7e7c8}
+.bicon.crunchy{width:44px;height:26px;border-radius:0 0 22px 22px;background:linear-gradient(#f5c04a,#c98a1c);border:2px solid #9a6410;border-top:0}
+.bicon.sm.corn{width:26px;height:26px}
+.bicon.sm.flour{width:28px;height:28px}
+.bicon.sm.crunchy{width:34px;height:20px}
+
+/* ---------- Counter ---------- */
+/* the cart body: painted red metal with dark steel work surfaces set into it */
+#counter{position:absolute;left:0;top:356px;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent 0 60px,rgba(0,0,0,.12) 60px 62px),linear-gradient(#a3202f,#7d1824);border-top:10px solid #c9c2b4;display:grid;grid-template-columns:300px 380px 1fr;gap:8px;padding:8px}
+.zone{position:relative;background:linear-gradient(#2a3a3f,#1b272c);border-radius:12px;border:2px solid #0f1619;box-shadow:inset 0 2px 8px rgba(0,0,0,.5)}
+.ztitle{position:absolute;top:8px;left:12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#d8dde3;opacity:.7;font-weight:700;z-index:1}
+
+#meats{position:absolute;left:12px;top:32px;display:flex;flex-direction:column;gap:8px}
+.meatbin{width:120px;height:88px;border-radius:12px;cursor:pointer;background:var(--panel);border:2px solid #3b4a52;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:700;color:#e3e8ee;transition:border-color .15s,transform .1s}
+.meatbin:hover{border-color:var(--acc);transform:translateY(-2px)}
+.meatbin.locked{opacity:.3;pointer-events:none}
+.meatbin .ing{width:42px;height:42px}
+.meatbin.sizzle{animation:bump .25s}
+
+#plancha{position:absolute;left:142px;top:32px;width:146px;height:280px;background:#1b1f24;border-radius:10px;border:3px solid #4a525b;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;box-shadow:inset 0 0 24px rgba(0,0,0,.8),0 0 18px #ff6a1a44}
+#plancha:before{content:"";position:absolute;left:8px;right:8px;bottom:-2px;height:4px;background:linear-gradient(90deg,#ff8a2a,#ffd27a,#ff6a1a);border-radius:2px;box-shadow:0 0 18px #ff7a1a;animation:heat 1.4s infinite alternate}
+.pslot{border-radius:10px;background:#111419;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.portion{width:56px;height:56px;border-radius:50%;cursor:pointer;background:conic-gradient(var(--c) var(--p),#2c3139 0);display:flex;align-items:center;justify-content:center;transition:box-shadow .2s}
+.portion .ing{width:42px;height:42px}
+.portion.raw .ing{filter:saturate(.5) brightness(1.3)}
+.portion.ready{box-shadow:0 0 16px #5ad36a}
+.portion.burnt .ing{filter:brightness(.2)}
+.portion.burnt{box-shadow:0 0 12px #000}
+.plabel{font-size:10px;font-weight:700;color:#c9cdd8;text-transform:uppercase;letter-spacing:1px}
+.pslot .plabel.raw{color:#f5a4c0}.pslot .plabel.ready{color:#8ff5a0}.pslot .plabel.burnt{color:#ff7b7b}
+
+#breads{position:absolute;left:14px;top:34px;display:flex;flex-direction:column;gap:9px}
+.bread{width:98px;height:84px;border-radius:12px;cursor:pointer;background:var(--panel);border:2px solid #3b4a52;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:700;color:#e3e8ee;transition:border-color .15s,transform .1s}
+.bread:hover{border-color:var(--acc);transform:translateY(-2px)}
+.bread.locked{opacity:.3;pointer-events:none}
+.bread small{color:var(--acc);font-weight:600}
+#handArea{position:absolute;left:124px;top:34px;width:160px;display:flex;flex-direction:column;align-items:center}
+#wrap{width:150px;height:190px;border-radius:50% 50% 30px 30px;background:#2a353b;border:3px dashed #58656d;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:6px;padding:26px 12px 10px;position:relative;transition:box-shadow .2s}
+#wrap.corn{background:radial-gradient(circle at 40% 30%,#ffe28a,#e0a93c);border:3px solid #b8832a;border-radius:50%;height:160px;margin-top:15px;padding-top:34px}
+#wrap.flour{background:radial-gradient(circle at 40% 30%,#fff4dc,#e9cfa0);border:3px solid #c9a46f;border-radius:50%;height:170px;margin-top:10px;padding-top:36px}
+#wrap.crunchy{background:linear-gradient(#f5c04a,#c98a1c);border:3px solid #9a6410;border-top:0;border-radius:0 0 75px 75px;height:150px;margin-top:20px;padding-top:14px}
+#wrap.ready{box-shadow:0 0 0 4px #5ad36a,0 0 34px #5ad36a;animation:pulse 1s infinite}
+#wrap.ruined{box-shadow:0 0 0 4px #ff3b4a,0 0 24px #ff3b4a}
+#wrap .ing{width:34px;height:34px}
+#wrap .ing b{font-size:10px}
+#wrap .hint{color:#c9cdd8;font-size:12px;text-align:center;align-self:center;width:100%;margin-top:40px;opacity:.6}
+#handStatus{margin-top:10px;font-size:13px;font-weight:700;text-align:center;min-height:38px;color:#fff;line-height:1.3}
+#handStatus.ok{color:#8ff5a0}#handStatus.bad{color:#ff7b7b}
+#trash{position:absolute;right:16px;top:70px;width:66px;height:110px;cursor:pointer;text-align:center}
+#trash .lid{width:66px;height:12px;background:linear-gradient(#5d6577,#39404d);border-radius:6px 6px 2px 2px;margin:0 auto;transition:transform .15s;transform-origin:left bottom}
+#trash .bin{width:54px;height:66px;margin:2px auto 0;background:repeating-linear-gradient(90deg,#4a5162 0 10px,#3a404e 10px 14px),#4a5162;border-radius:6px 6px 12px 12px;border:2px solid #272b35}
+#trash:hover .lid{transform:rotate(-18deg)}
+#trash .label{font-size:11px;font-weight:700;color:#c9cdd8;margin-top:6px}
+#trash.drop .bin{animation:bump .25s}
+
+#trays{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;position:absolute;left:12px;top:32px;right:12px}
+.tray{background:var(--panel);border:2px solid #3b4a52;border-radius:12px;padding:7px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;transition:border-color .15s,transform .1s}
+.tray:hover{border-color:var(--acc);transform:translateY(-2px)}
+.tray .ing{width:44px;height:44px}
+.tray .tname{font-size:9px;font-weight:700;color:#e3e8ee;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tray .stock{font-size:11px;color:var(--acc);font-weight:700}
+.tray.empty{opacity:.45}
+.tray.locked{opacity:.25;pointer-events:none}
+.tray.buzz{border-color:#ff3b4a}
+.flies{position:absolute;inset:0;pointer-events:none;z-index:2}
+.flies i{position:absolute;width:7px;height:7px;background:#111;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.25);animation:fly 1.1s infinite alternate ease-in-out}
+.flies i:nth-child(1){left:20%;top:20%}
+.flies i:nth-child(2){left:60%;top:35%;animation-delay:-.4s;animation-duration:.9s}
+.flies i:nth-child(3){left:40%;top:60%;animation-delay:-.7s;animation-duration:1.3s}
+#tools{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:10px}
+.tool{flex:1;height:70px;border-radius:12px;background:var(--panel);border:2px solid #3b4a52;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 12px;color:#e3e8ee;font-weight:700;font-size:13px;position:relative;overflow:hidden;text-align:left}
+.tool:hover{border-color:var(--acc)}
+.tool .ico{width:44px;height:44px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:24px}
+#supplier .ico{background:var(--acc)}
+#fan .ico{background:var(--cyan)}
+#fan.spin .ico{animation:spin .6s linear}
+.tool .prog{position:absolute;left:0;bottom:0;height:4px;background:var(--acc);width:0}
+.tool small{display:block;font-weight:600;opacity:.6;font-size:11px}
+
+/* ---------- Overlay ---------- */
+#overlay{position:absolute;inset:0;background:rgba(5,6,20,.86);display:flex;align-items:center;justify-content:center;z-index:20}
+#overlay.hidden{display:none}
+.card{width:720px;background:#141a2a;border:2px solid var(--pink);border-radius:20px;padding:28px 34px;text-align:center;box-shadow:0 0 40px #ff2d9555,0 20px 60px rgba(0,0,0,.6)}
+.card h1{font-size:48px;margin:0;color:var(--acc);letter-spacing:2px;font-weight:900;text-shadow:0 0 14px #ffd60a88}
+.card h2{font-size:30px;margin:0 0 6px;color:var(--acc)}
+.card .sub{opacity:.75;margin:6px 0 18px;font-size:16px}
+.big{font-size:18px;padding:12px 30px;background:var(--acc);color:#2a1a00;border:none;border-radius:12px;font-weight:800;cursor:pointer;margin:6px}
+.big:hover{background:#ffe566}
+.ghost{font-size:15px;padding:10px 20px;background:transparent;color:#fff;border:1px solid #434a75;border-radius:12px;font-weight:700;cursor:pointer;margin:6px}
+.ghost:hover{background:#262b45}
+.steps{text-align:left;margin:0 auto 10px;padding:0;list-style:none;font-size:13px;line-height:1.35;max-width:640px}
+.steps li{display:flex;gap:10px;margin:4px 0;align-items:flex-start}
+.steps li span{flex:none;width:24px;height:24px;border-radius:50%;background:var(--pink);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.stat{background:#1c2033;border-radius:12px;padding:10px}
+.stat b{display:block;font-size:24px;color:var(--acc)}
+.stat span{font-size:12px;opacity:.7}
+.verdict{font-size:18px;font-weight:800;margin:8px 0}
+.verdict.good{color:#8ff5a0}.verdict.bad{color:#ff7b7b}
+.crown{font-size:70px;line-height:1}
+
+.float{position:absolute;font-weight:900;font-size:18px;color:#fff;text-shadow:0 2px 4px #000,0 0 8px rgba(0,0,0,.6);animation:floatUp 1.1s forwards;pointer-events:none;z-index:15;white-space:nowrap;transform:translateX(-50%)}
+.float.bad{color:#ff7b7b}.float.good{color:#8ff5a0}.float.gold{color:var(--acc)}
+.note{position:absolute;font-size:22px;color:var(--acc);animation:floatUp 1.6s forwards;pointer-events:none;z-index:15}
+
+.he .bubble,.he .card,.he #handStatus,.he .tool,.he .pill{direction:rtl}
+.he .steps,.he .tool{text-align:right}
+
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes twinkle{from{opacity:.55}to{opacity:1}}
+@keyframes heat{from{opacity:.75}to{opacity:1}}
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.55}96%{opacity:1}98%{opacity:.7}}
+@keyframes walkin{from{transform:translateX(-70px);opacity:0}to{transform:none;opacity:1}}
+@keyframes leaveHappy{to{transform:translateX(90px) translateY(-10px);opacity:0}}
+@keyframes storm{0%{transform:none}20%{transform:translateX(-8px) rotate(-4deg)}40%{transform:translateX(8px) rotate(4deg)}100%{transform:translateX(-160px);opacity:0}}
+@keyframes tremble{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes bump{50%{transform:scale(1.08)}}
+@keyframes fly{from{transform:translate(0,0)}to{transform:translate(9px,-7px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes floatUp{0%{opacity:0;margin-top:0}15%{opacity:1}100%{opacity:0;margin-top:-60px}}
+</style>
+</head>
+<body>
+<div id="game">
+  <header id="hud">
+    <div class="pill"><small data-t="day">Night</small><span id="dayLbl">1</span></div>
+    <div class="pill" id="moneyPill"><small data-t="earned">Earned</small><span id="moneyLbl">$0</span><small>/</small><span id="targetLbl">$100</span></div>
+    <div id="timeWrap"><div id="timeBar"></div></div>
+    <div class="pill"><small data-t="strikesLbl">Angry</small><span id="strikes"><i></i><i></i><i></i></span></div>
+    <button class="hbtn" id="radioBtn" disabled>♪ <span data-t="radio">Speaker</span> ×<span id="tokLbl">0</span></button>
+    <button class="hbtn" id="pauseBtn" data-t="pause">Pause</button>
+    <button class="hbtn" id="muteBtn" data-t="mute">Mute</button>
+    <button class="hbtn" id="langBtn" data-t="lang">Español</button>
+    <button class="hbtn" id="fsBtn" title="Fullscreen">⛶</button>
+  </header>
+  <div id="goalBanner"></div>
+
+  <section id="street">
+    <svg id="scene" viewBox="0 0 1100 300" preserveAspectRatio="none"></svg>
+    <div class="canopy"><span>TACO NIGHTS</span></div>
+    <div class="lights"></div>
+    <div class="post l"></div><div class="post r"></div>
+    <div id="counterEdge"></div>
+  </section>
+
+  <section id="counter">
+    <div class="zone">
+      <div class="ztitle" data-t="grill">Plancha</div>
+      <div id="meats"></div>
+      <div id="plancha"><div class="pslot"></div><div class="pslot"></div><div class="pslot"></div><div class="pslot"></div></div>
+    </div>
+    <div class="zone">
+      <div class="ztitle" data-t="assembly">Build</div>
+      <div id="breads"></div>
+      <div id="handArea"><div id="wrap"></div><div id="handStatus"></div></div>
+      <div id="trash"><div class="lid"></div><div class="bin"></div><div class="label" data-t="trash">Trash</div></div>
+    </div>
+    <div class="zone">
+      <div class="ztitle" data-t="pantry">Toppings</div>
+      <div id="trays"></div>
+      <div id="tools">
+        <button class="tool" id="supplier"><div class="ico">🧑‍🍳</div><div><span data-t="supplier">Prep cook</span><small id="supSub"></small></div><div class="prog"></div></button>
+        <button class="tool" id="fan"><div class="ico">🌀</div><div><span data-t="fan">Fan</span><small id="fanSub"></small></div></button>
+      </div>
+    </div>
+  </section>
+
+  <div id="overlay"></div>
+</div>
+<div id="rotate"><div class="ph"></div><div data-t="rotate">Turn your phone sideways to play</div></div>
+
+<script>
+(() => {
+const W = 1100, H = 700;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const CUR = '$';
+const money$ = n => (n < 0 ? '-' : '') + CUR + Math.abs(n);
+
+// ---------- Strings ----------
+const LANGS = ['en', 'es', 'he'];
+const STR = {
+en: {
+  title:'Taco Nights', sub:'The taco stand outside the bars on Main Street. Feed the night crowd.', start:'Play level', how:'How to play', signSub:'LATE NIGHT', levels:'Levels', rotate:'Turn your phone sideways to play', goalBanner:'Goal reached! Keep serving for more stars, or tap here to finish', stars:'Stars', star1:'1 star = goal', star2:'2 stars = goal ×1.5', star3:'3 stars = goal ×2',
+  s1:'Customers show their order in a bubble: the tortilla, which meat and how many scoops, and the toppings.',
+  s2:'Click a meat bin to drop a portion on the plancha. Take it when it turns golden - leave it too long and it chars.',
+  s3:'Pick a tortilla, then click the meat and toppings to build it exactly as ordered. Over-fill it and the taco is ruined.',
+  s4:'When the taco glows and rings, click that customer to serve. Fast service earns a tip.',
+  s5:'Ruined taco or charred meat? Trash it - the ingredients cost money. Three customers leaving angry closes the stand for the night.',
+  s6:'Flies on a tray? Hit the fan. Out of stock? Call the prep cook. Every $40 earns a song on the speaker that calms everyone.',
+  day:'Level', earned:'Earned', pause:'Pause', resume:'Resume', mute:'Mute', unmute:'Sound', radio:'Speaker', paused:'Paused', pauseHint:'Press Space to continue',
+  grill:'Plancha', assembly:'Build', pantry:'Toppings', trash:'Trash', supplier:'Prep cook', fan:'Fan', delivering:'Prepping…', restockAll:'Restock every tray', shooFlies:'Shoo the flies',
+  pickBread:'Take a tortilla to start', filling:'Building… click meat and toppings', readyFor:'Ready! Serve to', ruined:'Wrong mix - trash it', notReady:'Not ready!', burnt:'Charred! -$1', handsFull:'Hands full', breadFirst:'Take a tortilla first', empty:'Out of stock', fliesOn:'Flies! Use the fan', notMine:"That's not my order!", griddleFull:'Plancha full', raw:'raw', ready:'ready', burntL:'charred', restocked:'Restocked!', fliesAte:'Flies got into the ', radioOn:'♪ Song on ♪', tip:'tip', leftAngry:'left angry', strikesLbl:'Angry', noFlies:'No flies', wrapHint:'tortilla goes here',
+  dayDone:'Level complete!', dayFail:'Closing time', goalHit:'Goal reached', goalMiss:'Goal missed', tooAngry:'Too many customers left angry', served:'Served', lost:'Lost', tips:'Tips', trashCost:'Waste', next:'Next level', retry:'Retry level', menu:'Menu', king:'Taco Legend of Main Street!', kingSub:'All 20 levels cleared. The stand is yours.', keepGoing:'Back to levels', best:'Best level score', total:'Total', lang:'Español'
+},
+es: {
+  title:'Taco Nights', sub:'El puesto de tacos frente a los bares de la calle principal. Alimenta a la gente de la noche.', start:'Jugar nivel', how:'Cómo se juega', signSub:'DE NOCHE', levels:'Niveles', rotate:'Gira el teléfono para jugar', goalBanner:'¡Meta alcanzada! Sigue sirviendo por más estrellas, o toca aquí para terminar', stars:'Estrellas', star1:'1 estrella = meta', star2:'2 estrellas = meta ×1.5', star3:'3 estrellas = meta ×2',
+  s1:'Los clientes muestran su pedido en un globo: la tortilla, qué carne y cuántas porciones, y los toppings.',
+  s2:'Haz clic en una carne para ponerla en la plancha. Tómala cuando esté dorada - si la dejas mucho, se quema.',
+  s3:'Elige una tortilla y haz clic en la carne y los toppings para armarlo exactamente como lo pidieron. Si te pasas, el taco se arruina.',
+  s4:'Cuando el taco brille y suene, haz clic en ese cliente para servirlo. El servicio rápido da propina.',
+  s5:'¿Taco arruinado o carne quemada? A la basura - los ingredientes cuestan. Tres clientes que se van enojados cierran el puesto.',
+  s6:'¿Moscas en una bandeja? Dale al ventilador. ¿Sin stock? Llama al ayudante. Cada $40 ganas una canción que calma a todos.',
+  day:'Nivel', earned:'Ganado', pause:'Pausa', resume:'Seguir', mute:'Silencio', unmute:'Sonido', radio:'Bocina', paused:'En pausa', pauseHint:'Pulsa espacio para seguir',
+  grill:'Plancha', assembly:'Armado', pantry:'Toppings', trash:'Basura', supplier:'Ayudante', fan:'Ventilador', delivering:'Preparando…', restockAll:'Rellenar bandejas', shooFlies:'Espantar moscas',
+  pickBread:'Toma una tortilla para empezar', filling:'Armando… clic en carne y toppings', readyFor:'¡Listo! Sirve a', ruined:'Mezcla incorrecta - a la basura', notReady:'¡Aún no!', burnt:'¡Quemado! -$1', handsFull:'Manos ocupadas', breadFirst:'Primero la tortilla', empty:'Sin stock', fliesOn:'¡Moscas! Usa el ventilador', notMine:'¡Ese no es mi pedido!', griddleFull:'Plancha llena', raw:'crudo', ready:'listo', burntL:'quemado', restocked:'¡Rellenado!', fliesAte:'Las moscas se metieron en ', radioOn:'♪ Suena la música ♪', tip:'propina', leftAngry:'se fue enojado', strikesLbl:'Enojados', noFlies:'Sin moscas', wrapHint:'la tortilla va aquí',
+  dayDone:'¡Nivel completado!', dayFail:'Hora de cerrar', goalHit:'Meta alcanzada', goalMiss:'Meta no alcanzada', tooAngry:'Demasiados clientes se fueron enojados', served:'Servidos', lost:'Perdidos', tips:'Propinas', trashCost:'Desperdicio', next:'Siguiente nivel', retry:'Repetir nivel', menu:'Menú', king:'¡Leyenda del taco!', kingSub:'Los 20 niveles superados. El puesto es tuyo.', keepGoing:'Volver a niveles', best:'Mejor puntaje', total:'Total', lang:'עברית'
+},
+he: {
+  title:'Taco Nights', sub:'דוכן הטאקו מול הברים ברחוב הראשי. האכילו את קהל הלילה.', start:'שחקו בשלב', how:'איך משחקים', signSub:'עד מאוחר', levels:'שלבים', rotate:'סובבו את הטלפון לרוחב כדי לשחק', goalBanner:'היעד הושג! המשיכו להגיש לעוד כוכבים, או לחצו כאן לסיום', stars:'כוכבים', star1:'כוכב = היעד', star2:'2 כוכבים = פי 1.5 מהיעד', star3:'3 כוכבים = פי 2 מהיעד',
+  s1:'לקוחות מציגים את ההזמנה בבועה: סוג הטורטייה, איזה בשר וכמה מנות, ואילו תוספות.',
+  s2:'לחצו על בשר כדי להניח מנה על הפלנצ\'ה. קחו אותה כשהיא זהובה - אם משאירים יותר מדי היא נחרכת.',
+  s3:'בחרו טורטייה ואז לחצו על הבשר והתוספות כדי להרכיב בדיוק לפי ההזמנה. מילוי יתר הורס את הטאקו.',
+  s4:'כשהטאקו זוהר ומצלצל, לחצו על הלקוח כדי להגיש. שירות מהיר מזכה בטיפ.',
+  s5:'טאקו הרוס או בשר חרוך? לפח - חומרי הגלם עולים כסף. שלושה לקוחות שעוזבים כועסים סוגרים את הדוכן ללילה.',
+  s6:'זבובים על מגש? לחצו על המאוורר. נגמר המלאי? קראו לעוזר. כל 40$ מזכים בשיר ברמקול שמרגיע את כולם.',
+  day:'שלב', earned:'הכנסות', pause:'השהה', resume:'המשך', mute:'השתק', unmute:'צליל', radio:'רמקול', paused:'מושהה', pauseHint:'לחצו רווח להמשך',
+  grill:'פלנצ\'ה', assembly:'הרכבה', pantry:'תוספות', trash:'פח', supplier:'עוזר', fan:'מאוורר', delivering:'מכינים…', restockAll:'חידוש כל המגשים', shooFlies:'לגרש את הזבובים',
+  pickBread:'קחו טורטייה כדי להתחיל', filling:'מרכיבים… לחצו על בשר ותוספות', readyFor:'מוכן! הגישו ל', ruined:'תערובת שגויה - לפח', notReady:'עוד לא מוכן!', burnt:'נחרך! ‎-1$', handsFull:'הידיים מלאות', breadFirst:'קודם קחו טורטייה', empty:'נגמר המלאי', fliesOn:'זבובים! הפעילו מאוורר', notMine:'זו לא ההזמנה שלי!', griddleFull:'הפלנצ\'ה מלאה', raw:'נא', ready:'מוכן', burntL:'חרוך', restocked:'המלאי חודש!', fliesAte:'הזבובים נכנסו ל', radioOn:'♪ מוזיקה ♪', tip:'טיפ', leftAngry:'עזב/ה בכעס', strikesLbl:'כועסים', noFlies:'אין זבובים', wrapHint:'הטורטייה נכנסת כאן',
+  dayDone:'השלב הושלם!', dayFail:'סוגרים', goalHit:'היעד הושג', goalMiss:'היעד לא הושג', tooAngry:'יותר מדי לקוחות עזבו בכעס', served:'הוגשו', lost:'אבדו', tips:'טיפים', trashCost:'בזבוז', next:'לשלב הבא', retry:'נסו שוב', menu:'תפריט', king:'אגדת הטאקו של הרחוב הראשי!', kingSub:'כל 20 השלבים הושלמו. הדוכן שלכם.', keepGoing:'חזרה לשלבים', best:'השיא', total:'סה"כ', lang:'English'
+}};
+let lang = 'en';
+const T = k => (STR[lang][k] != null ? STR[lang][k] : STR.en[k] || k);
+
+// ---------- Data ----------
+const ING = {
+  asada:    { en:'Carne asada',   es:'Asada',            he:'אסאדה',        price:3 },
+  pastor:   { en:'Al pastor',     es:'Al pastor',        he:'אל פסטור',     price:3 },
+  pollo:    { en:'Pollo',         es:'Pollo',            he:'עוף',          price:3 },
+  cilantro: { en:'Onion-cilantro',es:'Cebolla-cilantro', he:'בצל וכוסברה',  price:1 },
+  verde:    { en:'Salsa verde',   es:'Salsa verde',      he:'סלסה ירוקה',   price:1 },
+  roja:     { en:'Salsa roja',    es:'Salsa roja',       he:'סלסה אדומה',   price:1 },
+  guac:     { en:'Guacamole',     es:'Guacamole',        he:'גוואקמולי',    price:2 },
+  pico:     { en:'Pico de gallo', es:'Pico de gallo',    he:'פיקו דה גאיו', price:1 },
+  queso:    { en:'Queso',         es:'Queso',            he:'גבינה',        price:1 },
+  crema:    { en:'Crema',         es:'Crema',            he:'שמנת',         price:1 },
+  jalapeno: { en:'Jalapeño',      es:'Jalapeño',         he:'חלפיניו',      price:1 },
+  lime:     { en:'Lime',          es:'Limón',            he:'ליים',         price:1 },
+};
+const MEATS = ['asada', 'pastor', 'pollo'];
+const TOPS = ['cilantro','verde','queso','pico','roja','guac','crema','jalapeno','lime']; // in order of introduction
+const MAX_LEVEL = 20;
+const lerp = (a, b, t) => a + (b - a) * clamp(t, 0, 1);
+
+// SVG icons: every ingredient has its own shape so orders read at a glance.
+const cup = (top, dark) => `<svg viewBox="0 0 40 40"><path d="M7 14h26l-4 19H11z" fill="#e9e6df" stroke="#bdb8ab" stroke-width="1"/><ellipse cx="20" cy="14" rx="13" ry="4.5" fill="${top}"/><ellipse cx="20" cy="14.5" rx="9" ry="2.6" fill="${dark}" opacity=".45"/></svg>`;
+const ICON = {
+  asada: `<svg viewBox="0 0 40 40"><g stroke="#2a1208" stroke-width="1"><rect x="4" y="16" width="16" height="9" rx="3" fill="#6b3a1e" transform="rotate(-15 12 20)"/><rect x="18" y="12" width="17" height="9" rx="3" fill="#7a4424" transform="rotate(12 26 16)"/><rect x="12" y="24" width="18" height="9" rx="3" fill="#5c2f16" transform="rotate(-5 21 28)"/></g><g stroke="#1a0a04" stroke-width="1.5" stroke-linecap="round"><path d="M8 20l6-2M22 15l7-1M16 28l8-1"/></g></svg>`,
+  pastor: `<svg viewBox="0 0 40 40"><path d="M6 22c0-8 6-14 14-14s14 6 14 12c0 7-5 12-13 13S6 30 6 22z" fill="#d9481f"/><path d="M12 24c2-6 7-9 13-9" stroke="#f08a3c" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M24 26l7-4 1 8z" fill="#ffd54a" stroke="#c9a000" stroke-width="1"/><circle cx="14" cy="18" r="1.5" fill="#8f1f0c"/></svg>`,
+  pollo: `<svg viewBox="0 0 40 40"><g stroke-linecap="round" stroke-width="4" fill="none"><path d="M6 24c6-8 12-8 18-4" stroke="#e3b77a"/><path d="M10 30c6-6 12-8 22-6" stroke="#d9a35e"/><path d="M8 17c8-4 14-2 20 2" stroke="#f0cc93"/><path d="M14 12c6 0 12 2 18 8" stroke="#c98d45"/></g></svg>`,
+  cilantro: `<svg viewBox="0 0 40 40"><g fill="#f5f2ea" stroke="#cfc8b8" stroke-width="1"><rect x="6" y="14" width="8" height="8" rx="1" transform="rotate(10 10 18)"/><rect x="16" y="20" width="9" height="9" rx="1" transform="rotate(-12 20 24)"/><rect x="24" y="10" width="8" height="8" rx="1" transform="rotate(20 28 14)"/><rect x="26" y="24" width="7" height="7" rx="1"/></g><g fill="#3e9d3a"><ellipse cx="14" cy="27" rx="3.5" ry="2.2" transform="rotate(-30 14 27)"/><ellipse cx="22" cy="13" rx="3.5" ry="2.2" transform="rotate(20 22 13)"/><ellipse cx="10" cy="10" rx="3" ry="2" transform="rotate(-10 10 10)"/><ellipse cx="31" cy="20" rx="3" ry="2" transform="rotate(40 31 20)"/></g></svg>`,
+  verde: cup('#8bc34a', '#3f6d1f'),
+  roja: cup('#e04b2a', '#8f1a12'),
+  guac: `<svg viewBox="0 0 40 40"><ellipse cx="20" cy="21" rx="15" ry="17" fill="#3f6d1f"/><ellipse cx="20" cy="21" rx="12.5" ry="14.5" fill="#b7d86a"/><ellipse cx="20" cy="21" rx="10" ry="12" fill="#9cc84f"/><circle cx="20" cy="24" r="5.5" fill="#6b4320"/><circle cx="18.5" cy="22.5" r="1.8" fill="#9a6a3a"/></svg>`,
+  pico: `<svg viewBox="0 0 40 40"><g stroke="#00000033" stroke-width=".6"><rect x="5" y="6" width="10" height="10" rx="2" fill="#e9442f"/><rect x="16" y="5" width="9" height="9" rx="2" fill="#f5f2ea"/><rect x="26" y="8" width="9" height="9" rx="2" fill="#e9442f"/><rect x="7" y="18" width="9" height="9" rx="2" fill="#3e9d3a"/><rect x="17" y="16" width="10" height="10" rx="2" fill="#e9442f"/><rect x="28" y="19" width="8" height="8" rx="2" fill="#f5f2ea"/><rect x="10" y="28" width="9" height="8" rx="2" fill="#e9442f"/><rect x="21" y="28" width="9" height="8" rx="2" fill="#3e9d3a"/></g></svg>`,
+  queso: `<svg viewBox="0 0 40 40"><path d="M4 32c0-10 7-18 16-18s16 8 16 18z" fill="#f2dd8a"/><g fill="#fff6c8" stroke="#d9c06a" stroke-width=".8"><circle cx="12" cy="27" r="3"/><circle cx="20" cy="22" r="3.5"/><circle cx="28" cy="27" r="3"/><circle cx="16" cy="32" r="2.5"/><circle cx="24" cy="31" r="2.5"/><circle cx="20" cy="15" r="2.5"/></g></svg>`,
+  crema: `<svg viewBox="0 0 40 40"><g fill="none" stroke-linecap="round"><path d="M6 12c6 0 6 8 12 8s6-8 12-8 6 8 8 8" stroke="#d9d2c0" stroke-width="7"/><path d="M6 12c6 0 6 8 12 8s6-8 12-8 6 8 8 8" stroke="#fff" stroke-width="4"/><path d="M8 26c5 0 5 6 10 6s5-6 10-6 5 6 8 6" stroke="#d9d2c0" stroke-width="7"/><path d="M8 26c5 0 5 6 10 6s5-6 10-6 5 6 8 6" stroke="#fff" stroke-width="4"/></g></svg>`,
+  jalapeno: `<svg viewBox="0 0 40 40"><path d="M10 10c0 14 6 24 18 26 4 1 6-2 4-5C26 26 22 18 20 8c-1-4-10-3-10 2z" fill="#2f8f2f" stroke="#1d5e1d" stroke-width="1"/><path d="M14 8c-2-4 2-6 5-5 2 1 3 3 2 5" fill="#6b4320"/><path d="M15 14c1 7 4 13 9 17" stroke="#7fd36a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  lime: `<svg viewBox="0 0 40 40"><path d="M4 26a16 16 0 0 1 32 0z" fill="#6bb52a"/><path d="M7 25a13 13 0 0 1 26 0z" fill="#d4f05a"/><g stroke="#fff" stroke-width="1.5"><path d="M20 12v13M20 25H10M20 25h10M20 25l-7-9M20 25l7-9"/></g></svg>`,
+};
+const BREAD = {
+  corn:    { en:'Corn',    es:'Maíz',   he:'תירס', price:6 },
+  flour:   { en:'Flour',   es:'Harina', he:'קמח',  price:7 },
+  crunchy: { en:'Crunchy', es:'Dorada', he:'קשה',  price:8 },
+};
+const NAMES = ['Jake','María','Luis','Sofía','Diego','Emma','Carlos','Ava','Mateo','Lucía','Noah','Mia','Alex','Sam','Jordan','Valentina','Omar','Chloe','Leo','Nina','Amit','Dana'];
+const SLOT_X = { 2:[330,770], 3:[200,550,900], 4:[160,420,680,940] };
+const RAW_T = 3, MAX_STOCK = 8, BURN_COST = 1, TOKEN_EVERY = 40, BREAD_WASTE = 1;
+
+// 20 levels. Every knob moves monotonically with n, so each level is strictly harder:
+// more toppings on the menu and per order, more meats and tortillas to tell apart, faster
+// arrivals, shorter patience, more customers at once, a shorter window before meat chars,
+// more flies, and a higher cash goal.
+function levelCfg(n) {
+  n = clamp(n, 1, MAX_LEVEL);
+  const t = (n - 1) / (MAX_LEVEL - 1);
+  const topsOnMenu = n <= 2 ? 2 : n <= 4 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : n <= 10 ? 6 : n <= 13 ? 7 : n <= 16 ? 8 : 9;
+  const [topMin, topMax] = n === 1 ? [0, 1] : n <= 3 ? [1, 1] : n <= 6 ? [1, 2] : n <= 10 ? [2, 3] : n <= 15 ? [2, 4] : [3, 5];
+  return {
+    n,
+    target: Math.round(70 + 16 * (n - 1) + 0.6 * (n - 1) * (n - 1)),
+    dayLength: Math.round(lerp(90, 150, t)),   // early levels are short and brisk
+    spawnEvery: lerp(6.5, 3, t),
+    patience: lerp(36, 16, t),
+    maxCustomers: n <= 2 ? 2 : n <= 7 ? 3 : 4,
+    maxMeat: n <= 5 ? 1 : n <= 12 ? 2 : 3,
+    meats: n <= 3 ? ['asada'] : n <= 8 ? ['asada', 'pastor'] : MEATS,
+    toppings: TOPS.slice(0, topsOnMenu),
+    topMin, topMax,
+    doubles: n >= 9,
+    breads: n <= 4 ? ['corn'] : n <= 10 ? ['corn', 'flour'] : ['corn', 'flour', 'crunchy'],
+    flyEvery: n <= 2 ? 0 : lerp(42, 12, t),
+    burnT: lerp(10, 6.5, t),
+    strikes: 3,
+  };
+}
+
+// ---------- Audio ----------
+let ac = null, muted = false;
+function ctx() { if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ac = new AC(); } if (ac.state === 'suspended') ac.resume(); return ac; }
+function tone(f, dur, type = 'sine', vol = .2, when = 0) {
+  if (muted) return; const a = ctx(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f;
+  const t = a.currentTime + when; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05);
+}
+function noise(dur, vol) {
+  if (muted) return; const a = ctx(); if (!a) return;
+  const buf = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const s = a.createBufferSource(), g = a.createGain(), f = a.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1800;
+  s.buffer = buf; g.gain.value = vol; s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const sfx = {
+  ding: () => { tone(880, .18, 'sine', .25); tone(1320, .35, 'sine', .2, .12); },
+  cash: () => [523, 659, 784, 1046].forEach((f, i) => tone(f, .14, 'triangle', .18, i * .07)),
+  error: () => tone(150, .25, 'square', .1),
+  pop: () => tone(620, .07, 'triangle', .15),
+  tap: () => tone(420, .05, 'triangle', .1),
+  sizzle: () => noise(.45, .09),
+  angry: () => { tone(220, .2, 'sawtooth', .1); tone(170, .35, 'sawtooth', .1, .15); },
+  music: () => [330, 415, 494, 659, 494, 415, 330, 415, 494].forEach((f, i) => tone(f, .18, 'triangle', .14, i * .12)),
+  whoosh: () => noise(.3, .05),
+  burnt: () => { tone(300, .1, 'square', .08); tone(200, .2, 'square', .08, .1); },
+};
+
+// ---------- State ----------
+let state = 'menu';
+let day = 1, lvl = levelCfg(1);
+let money = 0, dayEarned = 0, timeLeft = 0, spawnTimer = 0, custId = 0;
+let customers = [], portions = [null, null, null, null], hand = null, stock = {};
+let strikes = 0, tokens = 0, tokensGiven = 0, radioLeft = 0, flies = null, flyTimer = 0, delivery = 0;
+let stats = null, bestDay = 0, lastStatus = '', unlocked = 1, starsByLevel = {}, goalShown = false;
+try {
+  bestDay = +localStorage.getItem('tacos.best') || 0;
+  unlocked = clamp(+localStorage.getItem('tacos.unlocked') || 1, 1, MAX_LEVEL);
+  starsByLevel = JSON.parse(localStorage.getItem('tacos.stars') || '{}') || {};
+} catch (e) {}
+const starsFor = (earned, target) => earned >= 2 * target ? 3 : earned >= 1.5 * target ? 2 : earned >= target ? 1 : 0;
+const starStr = (n, max = 3) => '★'.repeat(n) + '☆'.repeat(max - n);
+
+// ---------- Helpers ----------
+function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+function gamePos(node) {
+  const g = $('#game').getBoundingClientRect(), r = node.getBoundingClientRect(), s = g.width / W;
+  return { x: (r.left - g.left) / s + r.width / s / 2, y: (r.top - g.top) / s };
+}
+function float(node, text, cls = '') {
+  const p = gamePos(node), f = el('div', 'float ' + cls, text);
+  f.style.left = p.x + 'px'; f.style.top = (p.y - 10) + 'px';
+  $('#game').appendChild(f); setTimeout(() => f.remove(), 1100);
+}
+function ingChip(k, n, sm) { return `<div class="ing ${k}${sm ? ' sm' : ''}" title="${ING[k][lang]}">${ICON[k]}${n > 1 ? `<b>×${n}</b>` : ''}</div>`; }
+function breadIcon(b, sm) { return `<span class="bicon ${b}${sm ? ' sm' : ''}" title="${BREAD[b][lang]}"></span>`; }
+const ORDER_KEYS = [...MEATS, ...TOPS];
+function orderHTML(o) {
+  const items = ORDER_KEYS.filter(k => o.items[k]).map(k => ingChip(k, o.items[k], true)).join('');
+  return `<div class="oline">${breadIcon(o.bread, true)}<b style="font-size:13px">${money$(o.price)}</b></div><div class="oitems">${items}</div>`;
+}
+function fits(h, o) { if (!h || h.bread !== o.bread) return false; for (const k in h.items) if (h.items[k] > (o.items[k] || 0)) return false; return true; }
+function equalsOrder(h, o) { if (!fits(h, o)) return false; for (const k in o.items) if ((h.items[k] || 0) !== o.items[k]) return false; return true; }
+function handCost(h) { let c = BREAD_WASTE; for (const k in h.items) c += h.items[k] * ING[k].price; return c; }
+
+// ---------- Orders & customers ----------
+function makeOrder() {
+  const bread = pick(lvl.breads);
+  const items = {}; items[pick(lvl.meats)] = 1 + rnd(lvl.maxMeat);
+  const k = lvl.topMin + rnd(lvl.topMax - lvl.topMin + 1);
+  shuffle(lvl.toppings).slice(0, k).forEach(t => { items[t] = (lvl.doubles && Math.random() < .25 && (t === 'queso' || t === 'guac')) ? 2 : 1; });
+  let price = BREAD[bread].price; for (const i in items) price += items[i] * ING[i].price;
+  return { bread, items, price };
+}
+function randomLook() {
+  return {
+    skin: pick(['#f1c9a5','#e0ac7e','#c68642','#8d5524','#f7d8bf','#a66b3f','#5a3a22']),
+    hair: pick(['#2b1b10','#5a3b1e','#c9a24a','#111','#8a4b2a','#d6d6d6','#b5451b','#ff2d95','#2ee6ff']),
+    shirt: pick(['#e94b3c','#3b82f6','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316','#111','#fff']),
+    cap: pick(['#1d4ed8','#111','#dc2626','#047857']),
+    style: rnd(4), glasses: Math.random() < .3,
+  };
+}
+function avatarSVG(l) {
+  const hair = [
+    `<path d="M15 36 Q40 0 65 36 L65 29 Q40 8 15 29Z" fill="${l.hair}"/>`,
+    `<path d="M13 40 Q40 -4 67 40 L67 72 L58 72 L58 42 Q40 20 22 42 L22 72 L13 72Z" fill="${l.hair}"/>`,
+    `<path d="M15 32 Q40 4 65 32 Z" fill="${l.cap}"/><rect x="8" y="29" width="64" height="7" rx="3.5" fill="${l.cap}"/>`,
+    `<path d="M18 30 Q40 2 62 30 Q40 22 18 30Z" fill="${l.hair}"/>`,
+  ][l.style];
+  return `<svg viewBox="0 0 80 100" width="80" height="100">
+    <rect x="12" y="62" width="56" height="42" rx="14" fill="${l.shirt}" stroke="#0008" stroke-width="1"/>
+    <rect x="33" y="50" width="14" height="16" fill="${l.skin}"/>
+    <circle cx="40" cy="36" r="24" fill="${l.skin}"/>${hair}
+    <g class="eyes"><circle cx="31" cy="37" r="3" fill="#222"/><circle cx="49" cy="37" r="3" fill="#222"/></g>
+    ${l.glasses ? `<g fill="none" stroke="#222" stroke-width="2"><circle cx="31" cy="37" r="7"/><circle cx="49" cy="37" r="7"/><path d="M38 37h4"/></g>` : ''}
+    <g class="brows" stroke="#222" stroke-width="3" stroke-linecap="round" opacity="0"><path d="M24 28 L36 32"/><path d="M56 28 L44 32"/></g>
+    <path class="mouth" d="M30 46 Q40 56 50 46" fill="none" stroke="#7a2a2a" stroke-width="3" stroke-linecap="round"/>
+  </svg>`;
+}
+const MOUTH = { happy:'M30 46 Q40 56 50 46', meh:'M31 49 L49 49', angry:'M30 53 Q40 43 50 53' };
+
+function spawn() {
+  const used = new Set(customers.map(c => c.slot));
+  const free = []; for (let i = 0; i < lvl.maxCustomers; i++) if (!used.has(i)) free.push(i);
+  if (!free.length) return;
+  const c = { id: ++custId, slot: pick(free), order: makeOrder(), patience: 1, maxP: lvl.patience * (.9 + Math.random() * .3), name: pick(NAMES), look: randomLook(), mood: 'happy', gone: false };
+  const e = el('div', 'cust enter');
+  e.style.left = (SLOT_X[lvl.maxCustomers][c.slot] - 90) + 'px';
+  e.innerHTML = `<div class="bubble">${orderHTML(c.order)}<div class="cname">${c.name}</div></div><div class="meter"><i></i></div><div class="avatar">${avatarSVG(c.look)}</div>`;
+  e.addEventListener('click', () => onCustomer(c));
+  $('#street').appendChild(e);
+  c.el = e; c.meter = e.querySelector('.meter i'); c.mouth = e.querySelector('.mouth'); c.brows = e.querySelector('.brows');
+  customers.push(c);
+  sfx.tap();
+}
+function removeCustomer(c, cls) {
+  c.gone = true; customers = customers.filter(x => x !== c);
+  c.el.classList.remove('enter', 'angry'); c.el.classList.add(cls);
+  setTimeout(() => c.el.remove(), 700);
+}
+function onCustomer(c) {
+  if (state !== 'play' || c.gone) return;
+  if (!hand) { c.el.classList.remove('shake'); void c.el.offsetWidth; c.el.classList.add('shake'); sfx.tap(); return; }
+  if (equalsOrder(hand, c.order)) { serve(c); return; }
+  c.el.classList.remove('shake'); void c.el.offsetWidth; c.el.classList.add('shake');
+  sfx.error(); float(c.el.querySelector('.bubble'), T('notMine'), 'bad');
+}
+function serve(c) {
+  const tip = Math.round(4 * c.patience);
+  const gain = c.order.price + tip;
+  money += gain; dayEarned += gain; stats.served++; stats.tips += tip;
+  float(c.el.querySelector('.avatar'), `+${money$(c.order.price)}` + (tip ? ` +${money$(tip)} ${T('tip')}` : ''), 'good');
+  removeCustomer(c, 'out'); hand = null; renderHand(); sfx.cash(); grantTokens();
+}
+function leave(c) {
+  strikes++; stats.lost++;
+  float(c.el.querySelector('.avatar'), '😡 ' + T('leftAngry'), 'bad');
+  removeCustomer(c, 'storm'); sfx.angry();
+  if (strikes >= lvl.strikes) endDay();
+}
+function grantTokens() {
+  const should = Math.floor(Math.max(0, dayEarned) / TOKEN_EVERY);
+  if (should > tokensGiven) { tokens = Math.min(3, tokens + (should - tokensGiven)); tokensGiven = should; float($('#radioBtn'), '♪ +1', 'gold'); }
+}
+
+// ---------- Plancha ----------
+function onMeat(k) {
+  if (state !== 'play') return;
+  const i = portions.indexOf(null);
+  const bin = $('#meat-' + k);
+  if (i < 0) { float($('#plancha'), T('griddleFull'), 'bad'); sfx.error(); return; }
+  const slot = $$('.pslot')[i];
+  const node = el('div', 'portion raw'); node.innerHTML = `<div class="ing ${k}">${ICON[k]}</div>`;
+  const label = el('div', 'plabel raw', T('raw'));
+  slot.appendChild(node); slot.appendChild(label);
+  const p = { t: 0, node, label, state: 'raw', kind: k }; portions[i] = p;
+  node.addEventListener('click', ev => { ev.stopPropagation(); onPortion(i); });
+  bin.classList.remove('sizzle'); void bin.offsetWidth; bin.classList.add('sizzle');
+  sfx.sizzle();
+}
+function removePortion(i) { const p = portions[i]; if (!p) return; p.node.remove(); p.label.remove(); portions[i] = null; }
+function onPortion(i) {
+  if (state !== 'play') return; const p = portions[i]; if (!p) return;
+  if (p.state === 'raw') { float(p.node, T('notReady'), 'bad'); sfx.error(); return; }
+  if (p.state === 'burnt') { money -= BURN_COST; dayEarned -= BURN_COST; stats.waste += BURN_COST; removePortion(i); float($('#plancha'), T('burnt'), 'bad'); sfx.burnt(); return; }
+  if (!hand) { float(p.node, T('breadFirst'), 'bad'); sfx.error(); return; }
+  const kind = p.kind; removePortion(i); addItem(kind);
+}
+
+// ---------- Assembly ----------
+function onBread(b) {
+  if (state !== 'play') return;
+  if (hand) { float($('#wrap'), T('handsFull'), 'bad'); sfx.error(); return; }
+  hand = { bread: b, items: {} }; sfx.pop(); renderHand();
+}
+function addItem(k) {
+  hand.items[k] = (hand.items[k] || 0) + 1;
+  renderHand();
+  const match = customers.find(c => equalsOrder(hand, c.order));
+  if (match) sfx.ding();
+  else if (!customers.some(c => fits(hand, c.order))) sfx.error();
+  else sfx.pop();
+}
+function onTray(k) {
+  if (state !== 'play') return;
+  const tray = $('#tray-' + k);
+  if (flies && flies.tray === k) { float(tray, T('fliesOn'), 'bad'); sfx.error(); return; }
+  if (stock[k] <= 0) { float(tray, T('empty'), 'bad'); sfx.error(); return; }
+  if (!hand) { float(tray, T('breadFirst'), 'bad'); sfx.error(); return; }
+  stock[k]--; renderTrays(); addItem(k);
+}
+function onTrash() {
+  if (state !== 'play' || !hand) return;
+  const cost = handCost(hand); money -= cost; dayEarned -= cost; stats.waste += cost; stats.trashed++;
+  hand = null; renderHand();
+  const t = $('#trash'); t.classList.remove('drop'); void t.offsetWidth; t.classList.add('drop');
+  float(t, money$(-cost), 'bad'); sfx.whoosh();
+}
+function onSupplier() {
+  if (state !== 'play' || delivery > 0) return;
+  if (TOPS.every(k => stock[k] >= MAX_STOCK)) { sfx.tap(); return; }
+  delivery = 2.5; sfx.tap();
+}
+function onFan() {
+  if (state !== 'play') return;
+  const f = $('#fan'); f.classList.remove('spin'); void f.offsetWidth; f.classList.add('spin'); sfx.whoosh();
+  if (!flies) { float(f, T('noFlies')); return; }
+  const tray = $('#tray-' + flies.tray); tray.querySelector('.flies')?.remove(); tray.classList.remove('buzz'); flies = null;
+}
+function onRadio() {
+  if (state !== 'play' || tokens <= 0 || radioLeft > 0) return;
+  tokens--; radioLeft = 6; sfx.music();
+  customers.forEach(c => c.patience = Math.min(1, c.patience + .35));
+  float($('#radioBtn'), T('radioOn'), 'gold');
+  for (let i = 0; i < 6; i++) setTimeout(() => {
+    if (state !== 'play') return;
+    const n = el('div', 'note', pick(['♪', '♫', '♬'])); n.style.left = (150 + rnd(800)) + 'px'; n.style.top = (150 + rnd(100)) + 'px';
+    $('#game').appendChild(n); setTimeout(() => n.remove(), 1600);
+  }, i * 600);
+}
+
+// ---------- Day flow ----------
+function startDay(n) {
+  day = n; lvl = levelCfg(n);
+  dayEarned = 0; timeLeft = lvl.dayLength; spawnTimer = 1.2; strikes = 0; tokens = 0; tokensGiven = 0; radioLeft = 0; delivery = 0; flies = null; flyTimer = lvl.flyEvery || 0;
+  stats = { served: 0, lost: 0, tips: 0, waste: 0, trashed: 0 };
+  goalShown = false; $('#goalBanner').classList.remove('show');
+  customers.forEach(c => c.el.remove()); customers = [];
+  portions.forEach((p, i) => removePortion(i)); hand = null;
+  TOPS.forEach(k => stock[k] = MAX_STOCK);
+  $$('.flies').forEach(f => f.remove());
+  buildBreads(); buildMeats(); renderTrays(); renderHand(); lastStatus = '';
+  $('#overlay').classList.add('hidden'); state = 'play';
+}
+function endDay() {
+  if (state !== 'play') return;
+  state = 'dayend';
+  const tooAngry = strikes >= lvl.strikes;
+  const success = !tooAngry && dayEarned >= lvl.target;
+  if (dayEarned > bestDay) { bestDay = dayEarned; try { localStorage.setItem('tacos.best', bestDay); } catch (e) {} }
+  if (success && day < MAX_LEVEL && unlocked < day + 1) { unlocked = day + 1; try { localStorage.setItem('tacos.unlocked', unlocked); } catch (e) {} }
+  const st = success ? starsFor(dayEarned, lvl.target) : 0;
+  if (st > (starsByLevel[day] || 0)) { starsByLevel[day] = st; try { localStorage.setItem('tacos.stars', JSON.stringify(starsByLevel)); } catch (e) {} }
+  $('#goalBanner').classList.remove('show');
+  customers.forEach(c => c.el.remove()); customers = []; if (flies) { $('#tray-' + flies.tray).querySelector('.flies')?.remove(); flies = null; }
+  setTimeout(() => showDayEnd(success, tooAngry), 500);
+}
+
+// ---------- Rendering ----------
+function buildBreads() {
+  $('#breads').innerHTML = Object.keys(BREAD).map(b => `<div class="bread${lvl.breads.includes(b) ? '' : ' locked'}" data-b="${b}">${breadIcon(b)}<div>${BREAD[b][lang]} <small>${money$(BREAD[b].price)}</small></div></div>`).join('');
+  $$('.bread').forEach(x => x.addEventListener('click', () => onBread(x.dataset.b)));
+}
+function buildMeats() {
+  $('#meats').innerHTML = MEATS.map(k => `<div class="meatbin${lvl.meats.includes(k) || state === 'menu' ? '' : ' locked'}" id="meat-${k}" data-k="${k}">${ingChip(k, 1)}<div>${ING[k][lang]}</div></div>`).join('');
+  $$('.meatbin').forEach(x => x.addEventListener('click', () => onMeat(x.dataset.k)));
+}
+function buildTrays() {
+  $('#trays').innerHTML = TOPS.map(k => `<div class="tray" id="tray-${k}" data-k="${k}">${ingChip(k, 1)}<div class="tname">${ING[k][lang]}</div><div class="stock"></div></div>`).join('');
+  $$('.tray').forEach(x => x.addEventListener('click', () => onTray(x.dataset.k)));
+  renderTrays();
+}
+function renderTrays() {
+  TOPS.forEach(k => {
+    const t = $('#tray-' + k); if (!t) return;
+    t.querySelector('.stock').textContent = `×${stock[k] ?? MAX_STOCK}`;
+    t.classList.toggle('empty', (stock[k] ?? MAX_STOCK) <= 0);
+    t.classList.toggle('locked', !!lvl && !lvl.toppings.includes(k) && state !== 'menu');
+  });
+}
+function renderHand() {
+  const w = $('#wrap');
+  w.className = ''; w.innerHTML = '';
+  if (!hand) w.innerHTML = `<div class="hint">${T('wrapHint')}</div>`;
+  else {
+    w.classList.add(hand.bread);
+    w.innerHTML = ORDER_KEYS.filter(k => hand.items[k]).map(k => ingChip(k, hand.items[k])).join('');
+  }
+  lastStatus = ''; if (lvl) renderStatus();
+}
+function renderStatus() {
+  const s = $('#handStatus'), w = $('#wrap');
+  let txt = '', cls = '';
+  if (!hand) txt = T('pickBread');
+  else {
+    const m = customers.find(c => equalsOrder(hand, c.order));
+    if (m) { txt = `${T('readyFor')} ${m.name}`; cls = 'ok'; }
+    else if (!customers.some(c => fits(hand, c.order))) { txt = T('ruined'); cls = 'bad'; }
+    else txt = T('filling');
+  }
+  const key = txt + '|' + cls;
+  if (key !== lastStatus) {
+    lastStatus = key; s.textContent = txt; s.className = cls;
+    w.classList.toggle('ready', cls === 'ok'); w.classList.toggle('ruined', cls === 'bad');
+  }
+}
+function render() {
+  $('#dayLbl').textContent = day;
+  $('#moneyLbl').textContent = money$(dayEarned);
+  $('#moneyLbl').style.color = dayEarned >= lvl.target ? '#8ff5a0' : '#fff';
+  $('#targetLbl').textContent = money$(lvl.target) + ' ' + starStr(starsFor(dayEarned, lvl.target));
+  const mp = $('#moneyPill'); mp.style.setProperty('--fill', (100 * clamp(dayEarned / lvl.target, 0, 1)) + '%'); mp.classList.toggle('hit', dayEarned >= lvl.target);
+  if (!goalShown && dayEarned >= lvl.target && state === 'play') { goalShown = true; const g = $('#goalBanner'); g.textContent = T('goalBanner'); g.classList.add('show'); sfx.cash(); }
+  $('#timeBar').style.width = (100 * clamp(timeLeft / lvl.dayLength, 0, 1)) + '%';
+  $('#timeBar').style.background = timeLeft < 20 ? '#ff3b4a' : '';
+  $$('#strikes i').forEach((i, k) => i.classList.toggle('on', k < strikes));
+  $('#tokLbl').textContent = tokens;
+  const rb = $('#radioBtn'); rb.disabled = tokens <= 0 || radioLeft > 0 || state !== 'play'; rb.classList.toggle('on', radioLeft > 0);
+  customers.forEach(c => {
+    c.meter.style.width = (100 * c.patience) + '%';
+    c.meter.style.background = c.patience > .55 ? '#5ad36a' : c.patience > .25 ? '#ffd60a' : '#ff3b4a';
+    const mood = c.patience > .55 ? 'happy' : c.patience > .25 ? 'meh' : 'angry';
+    if (mood !== c.mood) { c.mood = mood; c.mouth.setAttribute('d', MOUTH[mood]); c.brows.setAttribute('opacity', mood === 'angry' ? 1 : 0); c.el.classList.toggle('angry', mood === 'angry'); }
+  });
+  portions.forEach(p => {
+    if (!p) return;
+    const st = p.t < RAW_T ? 'raw' : p.t < lvl.burnT ? 'ready' : 'burnt';
+    const prog = st === 'raw' ? p.t / RAW_T : st === 'ready' ? (p.t - RAW_T) / (lvl.burnT - RAW_T) : 1;
+    p.node.style.setProperty('--p', (prog * 360) + 'deg');
+    p.node.style.setProperty('--c', st === 'raw' ? '#f5a4c0' : st === 'ready' ? (prog > .7 ? '#ffd60a' : '#5ad36a') : '#ff3b4a');
+    if (st !== p.state) { p.state = st; p.node.className = 'portion ' + st; p.label.className = 'plabel ' + st; p.label.textContent = T(st === 'burnt' ? 'burntL' : st); }
+  });
+  $('#supplier').querySelector('.prog').style.width = delivery > 0 ? (100 * (1 - delivery / 2.5)) + '%' : '0';
+  $('#supSub').textContent = delivery > 0 ? T('delivering') : T('restockAll');
+  $('#fanSub').textContent = flies ? T('fliesOn') : T('shooFlies');
+  renderStatus();
+}
+
+// ---------- Loop ----------
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(.2, (now - last) / 1000); last = now;
+  update(dt);
+  requestAnimationFrame(tick);
+}
+function update(dt) {
+  if (state !== 'play') return;
+  timeLeft -= dt;
+  if (timeLeft <= 0) { timeLeft = 0; endDay(); render(); return; }
+  if (radioLeft > 0) radioLeft -= dt;
+  else {
+    spawnTimer -= dt;
+    if (spawnTimer <= 0 && customers.length < lvl.maxCustomers) { spawn(); spawnTimer = lvl.spawnEvery * (.75 + Math.random() * .5); }
+    customers.slice().forEach(c => { c.patience -= dt / c.maxP; if (c.patience <= 0) leave(c); });
+  }
+  portions.forEach(p => { if (p) p.t += dt; });
+  if (delivery > 0) { delivery -= dt; if (delivery <= 0) { delivery = 0; TOPS.forEach(k => stock[k] = MAX_STOCK); renderTrays(); float($('#supplier'), T('restocked'), 'good'); sfx.cash(); } }
+  if (lvl.flyEvery > 0) {
+    if (!flies) {
+      flyTimer -= dt;
+      if (flyTimer <= 0) {
+        const k = pick(lvl.toppings); flies = { tray: k, t: 0 };
+        const tray = $('#tray-' + k); tray.appendChild(el('div', 'flies', '<i></i><i></i><i></i>')); tray.classList.add('buzz');
+        flyTimer = lvl.flyEvery * (.8 + Math.random() * .4);
+      }
+    } else {
+      flies.t += dt;
+      if (flies.t > 8 && stock[flies.tray] > 0) { stock[flies.tray] = 0; renderTrays(); float($('#tray-' + flies.tray), T('fliesAte') + ING[flies.tray][lang] + '!', 'bad'); }
+    }
+  }
+  render();
+}
+
+// ---------- Overlays ----------
+function showMenu() {
+  state = 'menu';
+  $('#overlay').classList.remove('hidden');
+  $('#overlay').innerHTML = `<div class="card">
+    <h1>${T('title')}</h1><div class="sub">${T('sub')}</div>
+    <div style="font-weight:800;color:var(--pink);margin-bottom:6px">${T('how')}</div>
+    <ol class="steps">${[1,2,3,4,5,6].map(i => `<li><span>${i}</span><div>${T('s' + i)}</div></li>`).join('')}</ol>
+    <div style="font-weight:800;color:var(--pink)">${T('levels')}</div>
+    <div class="lvls">${Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map(n => `<button class="lvl${n > unlocked ? ' locked' : n < unlocked ? ' done' : ' cur'}" data-n="${n}" ${n > unlocked ? 'disabled' : ''}>${n}<span class="rating${starsByLevel[n] ? '' : ' dim'}">${n <= unlocked ? starStr(starsByLevel[n] || 0) : ''}</span></button>`).join('')}</div>
+    <div class="sub" style="margin:0 0 8px;font-size:12px">${T('star1')} · ${T('star2')} · ${T('star3')}</div>
+    ${bestDay ? `<div class="sub" style="margin:0 0 10px">${T('best')}: ${money$(bestDay)}</div>` : ''}
+    <button class="big" id="startBtn">${T('start')} ${unlocked}</button>
+    <button class="ghost" id="langBtn2">${T('lang')}</button>
+  </div>`;
+  $('#startBtn').onclick = () => { ctx(); startDay(unlocked); };
+  $$('.lvl:not(.locked)').forEach(b => b.onclick = () => { ctx(); startDay(+b.dataset.n); });
+  $('#langBtn2').onclick = toggleLang;
+}
+function showPause() {
+  $('#overlay').classList.remove('hidden');
+  $('#overlay').innerHTML = `<div class="card"><h2>${T('paused')}</h2><div class="sub">${T('pauseHint')}</div>
+    <button class="big" id="resumeBtn">${T('resume')}</button><button class="ghost" id="menuBtn">${T('menu')}</button></div>`;
+  $('#resumeBtn').onclick = togglePause;
+  $('#menuBtn').onclick = () => { state = 'menu'; customers.forEach(c => c.el.remove()); customers = []; showMenu(); };
+}
+function showDayEnd(success, tooAngry) {
+  $('#overlay').classList.remove('hidden');
+  const king = success && day === MAX_LEVEL;
+  $('#overlay').innerHTML = `<div class="card">
+    ${king ? `<div class="crown">🌮👑</div><h2>${T('king')}</h2><div class="sub">${T('kingSub')}</div>` : `<h2>${success ? T('dayDone') : T('dayFail')}</h2>
+    <div class="verdict ${success ? 'good' : 'bad'}">${tooAngry ? T('tooAngry') : (success ? T('goalHit') : T('goalMiss'))} · ${money$(dayEarned)} / ${money$(lvl.target)}</div>`}
+    <div class="bigstars">${[1,2,3].map(i => `<span class="${i <= (success ? starsFor(dayEarned, lvl.target) : 0) ? '' : 'off'}">★</span>`).join('')}</div>
+    <div class="stats">
+      <div class="stat"><b>${stats.served}</b><span>${T('served')}</span></div>
+      <div class="stat"><b>${stats.lost}</b><span>${T('lost')}</span></div>
+      <div class="stat"><b>${money$(stats.tips)}</b><span>${T('tips')}</span></div>
+      <div class="stat"><b>${money$(stats.waste)}</b><span>${T('trashCost')}</span></div>
+    </div>
+    <div class="sub">${T('total')}: ${money$(money)} · ${T('best')}: ${money$(bestDay)}</div>
+    <button class="big" id="nextBtn">${success ? (king ? T('keepGoing') : T('next')) : T('retry')}</button>
+    <button class="ghost" id="menuBtn">${T('menu')}</button>
+  </div>`;
+  $('#nextBtn').onclick = () => king ? showMenu() : startDay(success ? day + 1 : day);
+  $('#menuBtn').onclick = showMenu;
+}
+function togglePause() {
+  if (state === 'play') { state = 'pause'; showPause(); $('#pauseBtn').textContent = T('resume'); }
+  else if (state === 'pause') { state = 'play'; $('#overlay').classList.add('hidden'); $('#pauseBtn').textContent = T('pause'); last = performance.now(); }
+}
+function applyLang() {
+  document.documentElement.lang = lang; document.body.classList.toggle('he', lang === 'he');
+  $$('[data-t]').forEach(n => n.textContent = T(n.dataset.t));
+  $('#muteBtn').textContent = T(muted ? 'unmute' : 'mute');
+  $('#pauseBtn').textContent = T(state === 'pause' ? 'resume' : 'pause');
+  buildTrays(); buildMeats(); if (lvl) buildBreads(); renderHand(); lastStatus = '';
+  customers.forEach(c => { c.el.querySelector('.bubble').innerHTML = orderHTML(c.order) + `<div class="cname">${c.name}</div>`; });
+  if (state === 'menu') showMenu(); else if (state === 'pause') showPause();
+}
+function toggleLang() { lang = LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length]; try { localStorage.setItem('tacos.lang', lang); } catch (e) {} applyLang(); }
+
+// ---------- Street scene ----------
+// One-point perspective toward (550,152). z = 0 is the near edge of the street, z = 1 the horizon.
+function buildStreet() {
+  const VX = 550, VY = 152;
+  const L = (a, b, z) => a + (b - a) * z;
+  const f2 = v => (+v).toFixed(1);
+  const BULBS = ['#ff3b3b', '#3bff6a', '#ffd60a', '#2ee6ff', '#ff2d95'];
+  const NEON = ['#ff2d95', '#2ee6ff', '#b6ff3b', '#ffd60a', '#ff7a00'];
+  let s = `<defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140f3a"/><stop offset=".55" stop-color="#4a2a7a"/><stop offset="1" stop-color="#e2704a"/></linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3744"/><stop offset="1" stop-color="#1e1c26"/></linearGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>`;
+  s += `<rect width="1100" height="300" fill="url(#sky)"/>`;
+  for (let i = 0; i < 50; i++) s += `<circle cx="${rnd(1100)}" cy="${rnd(110)}" r="${f2(Math.random() * 1.1 + .4)}" fill="#fff" opacity="${f2(Math.random() * .6 + .3)}"/>`;
+  // distant towers
+  s += `<path d="M330 150V70h70v80zM400 150V95h50v55zM520 150V85h60v65zM640 150V105h60v45zM720 150V75h70v75z" fill="#17122c"/>`;
+  for (let i = 0; i < 60; i++) s += `<rect x="${335 + rnd(450)}" y="${78 + rnd(66)}" width="3" height="4" fill="#ffd27a" opacity="${f2(Math.random() * .7 + .2)}"/>`;
+  // road, sidewalks, curbs, centre line, light trails
+  s += `<polygon points="150,300 950,300 562,152 538,152" fill="url(#road)"/>`;
+  s += `<polygon points="0,255 0,300 150,300 538,152" fill="#5a5664"/><polygon points="1100,255 1100,300 950,300 562,152" fill="#5a5664"/>`;
+  s += `<line x1="150" y1="300" x2="538" y2="152" stroke="#8d8997" stroke-width="2"/><line x1="950" y1="300" x2="562" y2="152" stroke="#8d8997" stroke-width="2"/>`;
+  s += `<line x1="544" y1="300" x2="550" y2="152" stroke="#e5b13a" stroke-width="2"/><line x1="556" y1="300" x2="550" y2="152" stroke="#e5b13a" stroke-width="2"/>`;
+  s += `<polygon points="290,300 420,300 548,158 544,158" fill="#fff" opacity=".5" filter="url(#blur)"/><polygon points="680,300 810,300 556,158 552,158" fill="#ff3b3b" opacity=".55" filter="url(#blur)"/>`;
+  // facades: wall top runs (0,0)->(538,138), wall base (0,255)->(538,152)
+  const wx = z => L(0, 538, z), wy = (z, f) => L(L(0, 138, z), L(255, 152, z), f);
+  const quad = (z1, z2, f1, f2_, m) => `${f2(m(wx(z1)))},${f2(wy(z1, f1))} ${f2(m(wx(z2)))},${f2(wy(z2, f1))} ${f2(m(wx(z2)))},${f2(wy(z2, f2_))} ${f2(m(wx(z1)))},${f2(wy(z1, f2_))}`;
+  for (const side of [-1, 1]) {
+    const m = x => side < 0 ? x : 1100 - x;
+    s += `<polygon points="${f2(m(0))},0 ${f2(m(0))},255 ${f2(m(538))},152 ${f2(m(538))},138" fill="${side < 0 ? '#3a1d18' : '#331a16'}"/>`;
+    // brick course lines
+    for (let f = .05; f < 1; f += .05) s += `<line x1="${f2(m(0))}" y1="${f2(wy(0, f))}" x2="${f2(m(538))}" y2="${f2(wy(1, f))}" stroke="#000" stroke-opacity=".12" stroke-width="1"/>`;
+    let k = 0;
+    for (let z = .02; z < .8; z += .06, k++) {
+      const z2 = z + .042;
+      // two rows of windows
+      for (const [a, b] of [[.12, .3], [.4, .58]]) {
+        const lit = Math.random() < .7;
+        s += `<polygon points="${quad(z, z2, a, b, m)}" fill="${lit ? '#ffc97a' : '#241410'}" stroke="#120806" stroke-width="${f2(L(3, .5, z))}" opacity="${lit ? f2(Math.random() * .35 + .6) : 1}"/>`;
+      }
+      // ground floor: a bar front with a neon sign every other building, a door otherwise
+      if (k % 2 === 0) {
+        s += `<polygon points="${quad(z, z2, .72, 1, m)}" fill="#ffb86b" opacity=".35"/>`;
+        const c = NEON[k / 2 % NEON.length];
+        s += `<polygon points="${quad(z + .006, z2 - .006, .63, .7, m)}" fill="none" stroke="${c}" stroke-width="${f2(L(2.5, .6, z))}" filter="url(#glow)"/><polygon points="${quad(z + .006, z2 - .006, .63, .7, m)}" fill="none" stroke="${c}" stroke-width="${f2(L(1.5, .4, z))}"/>`;
+      } else {
+        s += `<polygon points="${quad(z + .01, z2 - .01, .74, 1, m)}" fill="#20110c" stroke="#120806" stroke-width="1"/>`;
+      }
+    }
+    // street trees with fairy lights
+    for (const z of [.12, .3, .48, .64]) {
+      const r = L(34, 5, z), cx = m(L(70, 538, z)), cy = L(236, 154, z) - r;
+      s += `<rect x="${f2(cx - L(3, .5, z))}" y="${f2(cy)}" width="${f2(L(6, 1, z))}" height="${f2(r + L(14, 2, z))}" fill="#2a1a10"/>`;
+      s += `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(r)}" fill="#1f4a2a"/><circle cx="${f2(cx - r * .3)}" cy="${f2(cy - r * .25)}" r="${f2(r * .55)}" fill="#2b6236"/>`;
+      for (let i = 0, n = Math.round(L(14, 2, z)); i < n; i++) { const a = Math.random() * Math.PI * 2, d = Math.random() * r * .9; s += `<circle cx="${f2(cx + Math.cos(a) * d)}" cy="${f2(cy + Math.sin(a) * d)}" r="${f2(L(1.6, .5, z))}" fill="#fff3b0"/>`; }
+    }
+  }
+  // the arches, far to near so the near ones overlap
+  const zs = [.82, .74, .64, .52, .38, .22, .05];
+  zs.forEach((z, idx) => {
+    const xl = L(150, 538, z), xr = L(950, 562, z), baseY = L(132, 150, z), ground = L(300, 152, z);
+    const cx = (xl + xr) / 2, rx = (xr - xl) / 2, ry = L(82, 5, z), thick = L(14, 1.5, z);
+    const pw = L(10, 1.5, z);
+    s += `<rect x="${f2(xl - pw / 2)}" y="${f2(baseY)}" width="${f2(pw)}" height="${f2(ground - baseY)}" fill="#141414"/><rect x="${f2(xr - pw / 2)}" y="${f2(baseY)}" width="${f2(pw)}" height="${f2(ground - baseY)}" fill="#141414"/>`;
+    const arc = (r) => `M${f2(xl)} ${f2(baseY)} A${f2(rx)} ${f2(r)} 0 0 1 ${f2(xr)} ${f2(baseY)}`;
+    s += `<path d="${arc(ry + thick)}" fill="none" stroke="#161616" stroke-width="${f2(L(5, 1, z))}"/><path d="${arc(ry)}" fill="none" stroke="#161616" stroke-width="${f2(L(5, 1, z))}"/>`;
+    // zig-zag truss lattice between the two chords
+    const n = Math.round(L(26, 6, z)); let lat = '';
+    for (let i = 0; i <= n; i++) {
+      const a1 = Math.PI - Math.PI * i / n, a2 = Math.PI - Math.PI * (i + 1) / n;
+      const p1 = `${f2(cx + rx * Math.cos(a1))},${f2(baseY - (ry + thick) * Math.sin(a1))}`;
+      const p2 = `${f2(cx + rx * Math.cos(a2))},${f2(baseY - ry * Math.sin(a2))}`;
+      lat += (i ? 'L' : 'M') + p1 + 'L' + p2;
+    }
+    s += `<path d="${lat}" fill="none" stroke="#2a2a2a" stroke-width="${f2(L(2.5, .6, z))}"/>`;
+    // bulbs hanging from the lower chord
+    const nb = Math.round(L(30, 7, z)), br = L(4.2, 1.1, z); let bulbs = '', glow = '';
+    for (let i = 0; i <= nb; i++) {
+      const a = Math.PI - Math.PI * i / nb, bx = cx + rx * Math.cos(a), by = baseY - (ry - L(7, 1, z)) * Math.sin(a), c = BULBS[(i + idx) % BULBS.length];
+      glow += `<circle cx="${f2(bx)}" cy="${f2(by)}" r="${f2(br * 2.2)}" fill="${c}" opacity=".45"/>`;
+      bulbs += `<circle cx="${f2(bx)}" cy="${f2(by)}" r="${f2(br)}" fill="${c}"/>`;
+    }
+    s += `<g class="bulbs" style="animation-delay:${f2(-idx * .3)}s"><g filter="url(#glow)">${glow}</g>${bulbs}</g>`;
+    // the sign on the nearest arch
+    if (idx === zs.length - 1) {
+      const top = baseY - ry - thick - 14, h = 32;
+      s += `<rect x="410" y="${f2(top)}" width="280" height="${h}" rx="6" fill="#141430" stroke="#ffd60a" stroke-width="2.5"/>`;
+      s += `<text x="550" y="${f2(top + 23)}" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="900" font-size="21" letter-spacing="5" fill="#ffd60a">MAIN STREET</text>`;
+      for (let i = 0; i < 13; i++) s += `<circle cx="${f2(416 + i * 22.3)}" cy="${f2(i % 2 ? top + 4 : top + h - 4)}" r="2" fill="#fff3b0"/>`;
+    }
+  });
+  $('#scene').innerHTML = s;
+}
+buildStreet();
+
+// ---------- Wiring ----------
+function fit() { const s = Math.min(innerWidth / W, innerHeight / H); $('#game').style.transform = `translate(-50%,-50%) scale(${s})`; }
+addEventListener('resize', fit); fit();
+$('#trash').addEventListener('click', onTrash);
+$('#supplier').addEventListener('click', onSupplier);
+$('#fan').addEventListener('click', onFan);
+$('#radioBtn').addEventListener('click', onRadio);
+$('#pauseBtn').addEventListener('click', togglePause);
+$('#muteBtn').addEventListener('click', () => { muted = !muted; $('#muteBtn').textContent = T(muted ? 'unmute' : 'mute'); });
+$('#langBtn').addEventListener('click', toggleLang);
+$('#goalBanner').addEventListener('click', () => { if (state === 'play' && dayEarned >= lvl.target) endDay(); });
+$('#fsBtn').addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else { await document.documentElement.requestFullscreen(); if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape'); }
+  } catch (e) { /* not supported (e.g. iOS Safari): the rotate hint still applies */ }
+});
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+  if (e.key === 'Enter' && state === 'play' && dayEarned >= lvl.target) endDay();
+  if (e.key === 'm' || e.key === 'M') $('#muteBtn').click();
+});
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') togglePause(); });
+
+try { const l = localStorage.getItem('tacos.lang'); if (LANGS.includes(l)) lang = l; } catch (e) {}
+TOPS.forEach(k => stock[k] = MAX_STOCK);
+applyLang();
+showMenu();
+requestAnimationFrame(tick);
+// Debug/test hook: advance game time manually and inspect state (no effect on normal play).
+window.TacoNights = {
+  step: dt => update(dt),
+  startDay: n => startDay(n),
+  snapshot: () => ({ state, day, dayEarned, timeLeft, strikes, tokens, hand, stock: { ...stock },
+    portions: portions.map(p => p && { t: +p.t.toFixed(2), state: p.state, kind: p.kind }),
+    customers: customers.map(c => ({ name: c.name, order: c.order, patience: +c.patience.toFixed(2), slot: c.slot })) }),
+};
+})();
+</script>
+</body>
+</html>
