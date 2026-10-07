@@ -1,5 +1,5 @@
 // Taco Nights - offline cache. Bump CACHE when index.html changes so installed phones refresh.
-const CACHE = 'taco-nights-v1';
+const CACHE = 'taco-nights-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

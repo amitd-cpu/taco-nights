@@ -32,6 +32,20 @@ html,body{margin:0;height:100%;background:#07080f;font-family:'Segoe UI',system-
 .lvl .rating{font-size:9px;display:block;margin-top:-2px}
 .bigstars{font-size:40px;color:var(--acc);letter-spacing:4px;margin:4px 0}
 .bigstars .off{color:#434a75}
+.namerow{display:flex;gap:8px;justify-content:center;align-items:center;margin:6px 0 10px;flex-wrap:wrap}
+.namerow input{background:#1c2033;border:1px solid #434a75;color:#fff;border-radius:10px;padding:9px 12px;font-size:15px;font-weight:700;width:200px;text-align:center}
+.namerow input:focus{outline:2px solid var(--acc);border-color:var(--acc)}
+.namerow .ok{color:#8ff5a0;font-weight:700;font-size:14px}
+.board{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 12px;font-variant-numeric:tabular-nums}
+.board th{font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.6;padding:6px 8px;text-align:left}
+.board td{padding:7px 8px;border-top:1px solid #262b45;text-align:left}
+.board td.n,.board th.n{text-align:right}
+.board tr.me td{background:#2a2410;color:var(--acc)}
+.board td.rank{opacity:.6;width:34px}
+.board .st{color:var(--acc);letter-spacing:1px}
+.boardwrap{max-height:300px;overflow:auto;border:1px solid #262b45;border-radius:12px}
+.bnote{font-size:12px;opacity:.65;margin:4px 0 10px}
+.he .board th,.he .board td{text-align:right}.he .board td.n,.he .board th.n{text-align:left}
 button{font-family:inherit}
 #game{position:absolute;left:50%;top:50%;width:1100px;height:700px;transform-origin:center;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.7);background:#0b0f2a}
 
@@ -280,7 +294,7 @@ const money$ = n => (n < 0 ? '-' : '') + CUR + Math.abs(n);
 const LANGS = ['en', 'es', 'he'];
 const STR = {
 en: {
-  title:'Taco Nights', sub:'The taco stand outside the bars on Main Street. Feed the night crowd.', start:'Play level', how:'How to play', signSub:'LATE NIGHT', levels:'Levels', rotate:'Turn your phone sideways to play', goalBanner:'Goal reached! Keep serving for more stars, or tap here to finish', stars:'Stars', star1:'1 star = goal', star2:'2 stars = goal ×1.5', star3:'3 stars = goal ×2',
+  title:'Taco Nights', sub:'The taco stand outside the bars on Main Street. Feed the night crowd.', start:'Play level', how:'How to play', signSub:'LATE NIGHT', levels:'Levels', board:'Leaderboard', yourName:'Your name', saveScore:'Save score', saved:'Saved as', player:'Player', levelsCol:'Levels', starsCol:'Stars', totalCol:'Total', you:'you', loading:'Loading…', boardFail:'Could not reach the leaderboard. Showing this device only.', notConnected:'The shared leaderboard is not connected yet. Scores are saved on this device only.', back:'Back', rotate:'Turn your phone sideways to play', goalBanner:'Goal reached! Keep serving for more stars, or tap here to finish', stars:'Stars', star1:'1 star = goal', star2:'2 stars = goal ×1.5', star3:'3 stars = goal ×2',
   s1:'Customers show their order in a bubble: the tortilla, which meat and how many scoops, and the toppings.',
   s2:'Click a meat bin to drop a portion on the plancha. Take it when it turns golden - leave it too long and it chars.',
   s3:'Pick a tortilla, then click the meat and toppings to build it exactly as ordered. Over-fill it and the taco is ruined.',
@@ -293,7 +307,7 @@ en: {
   dayDone:'Level complete!', dayFail:'Closing time', goalHit:'Goal reached', goalMiss:'Goal missed', tooAngry:'Too many customers left angry', served:'Served', lost:'Lost', tips:'Tips', trashCost:'Waste', next:'Next level', retry:'Retry level', menu:'Menu', king:'Taco Legend of Main Street!', kingSub:'All 20 levels cleared. The stand is yours.', keepGoing:'Back to levels', best:'Best level score', total:'Total', lang:'Español'
 },
 es: {
-  title:'Taco Nights', sub:'El puesto de tacos frente a los bares de la calle principal. Alimenta a la gente de la noche.', start:'Jugar nivel', how:'Cómo se juega', signSub:'DE NOCHE', levels:'Niveles', rotate:'Gira el teléfono para jugar', goalBanner:'¡Meta alcanzada! Sigue sirviendo por más estrellas, o toca aquí para terminar', stars:'Estrellas', star1:'1 estrella = meta', star2:'2 estrellas = meta ×1.5', star3:'3 estrellas = meta ×2',
+  title:'Taco Nights', sub:'El puesto de tacos frente a los bares de la calle principal. Alimenta a la gente de la noche.', start:'Jugar nivel', how:'Cómo se juega', signSub:'DE NOCHE', levels:'Niveles', board:'Tabla de líderes', yourName:'Tu nombre', saveScore:'Guardar puntaje', saved:'Guardado como', player:'Jugador', levelsCol:'Niveles', starsCol:'Estrellas', totalCol:'Total', you:'tú', loading:'Cargando…', boardFail:'No se pudo cargar la tabla. Mostrando solo este dispositivo.', notConnected:'La tabla compartida aún no está conectada. Los puntajes se guardan solo en este dispositivo.', back:'Volver', rotate:'Gira el teléfono para jugar', goalBanner:'¡Meta alcanzada! Sigue sirviendo por más estrellas, o toca aquí para terminar', stars:'Estrellas', star1:'1 estrella = meta', star2:'2 estrellas = meta ×1.5', star3:'3 estrellas = meta ×2',
   s1:'Los clientes muestran su pedido en un globo: la tortilla, qué carne y cuántas porciones, y los toppings.',
   s2:'Haz clic en una carne para ponerla en la plancha. Tómala cuando esté dorada - si la dejas mucho, se quema.',
   s3:'Elige una tortilla y haz clic en la carne y los toppings para armarlo exactamente como lo pidieron. Si te pasas, el taco se arruina.',
@@ -306,7 +320,7 @@ es: {
   dayDone:'¡Nivel completado!', dayFail:'Hora de cerrar', goalHit:'Meta alcanzada', goalMiss:'Meta no alcanzada', tooAngry:'Demasiados clientes se fueron enojados', served:'Servidos', lost:'Perdidos', tips:'Propinas', trashCost:'Desperdicio', next:'Siguiente nivel', retry:'Repetir nivel', menu:'Menú', king:'¡Leyenda del taco!', kingSub:'Los 20 niveles superados. El puesto es tuyo.', keepGoing:'Volver a niveles', best:'Mejor puntaje', total:'Total', lang:'עברית'
 },
 he: {
-  title:'Taco Nights', sub:'דוכן הטאקו מול הברים ברחוב הראשי. האכילו את קהל הלילה.', start:'שחקו בשלב', how:'איך משחקים', signSub:'עד מאוחר', levels:'שלבים', rotate:'סובבו את הטלפון לרוחב כדי לשחק', goalBanner:'היעד הושג! המשיכו להגיש לעוד כוכבים, או לחצו כאן לסיום', stars:'כוכבים', star1:'כוכב = היעד', star2:'2 כוכבים = פי 1.5 מהיעד', star3:'3 כוכבים = פי 2 מהיעד',
+  title:'Taco Nights', sub:'דוכן הטאקו מול הברים ברחוב הראשי. האכילו את קהל הלילה.', start:'שחקו בשלב', how:'איך משחקים', signSub:'עד מאוחר', levels:'שלבים', board:'טבלת שיאים', yourName:'השם שלכם', saveScore:'שמרו תוצאה', saved:'נשמר בשם', player:'שחקן', levelsCol:'שלבים', starsCol:'כוכבים', totalCol:'סה"כ', you:'אתם', loading:'טוען…', boardFail:'לא ניתן לטעון את הטבלה. מוצג המכשיר הזה בלבד.', notConnected:'טבלת השיאים המשותפת עדיין לא מחוברת. התוצאות נשמרות רק במכשיר הזה.', back:'חזרה', rotate:'סובבו את הטלפון לרוחב כדי לשחק', goalBanner:'היעד הושג! המשיכו להגיש לעוד כוכבים, או לחצו כאן לסיום', stars:'כוכבים', star1:'כוכב = היעד', star2:'2 כוכבים = פי 1.5 מהיעד', star3:'3 כוכבים = פי 2 מהיעד',
   s1:'לקוחות מציגים את ההזמנה בבועה: סוג הטורטייה, איזה בשר וכמה מנות, ואילו תוספות.',
   s2:'לחצו על בשר כדי להניח מנה על הפלנצ\'ה. קחו אותה כשהיא זהובה - אם משאירים יותר מדי היא נחרכת.',
   s3:'בחרו טורטייה ואז לחצו על הבשר והתוספות כדי להרכיב בדיוק לפי ההזמנה. מילוי יתר הורס את הטאקו.',
@@ -374,14 +388,14 @@ function levelCfg(n) {
   n = clamp(n, 1, MAX_LEVEL);
   const t = (n - 1) / (MAX_LEVEL - 1);
   const topsOnMenu = n <= 2 ? 2 : n <= 4 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : n <= 10 ? 6 : n <= 13 ? 7 : n <= 16 ? 8 : 9;
-  const [topMin, topMax] = n === 1 ? [0, 1] : n <= 3 ? [1, 1] : n <= 6 ? [1, 2] : n <= 10 ? [2, 3] : n <= 15 ? [2, 4] : [3, 5];
+  const [topMin, topMax] = n === 1 ? [1, 1] : n <= 3 ? [1, 2] : n <= 6 ? [1, 2] : n <= 10 ? [2, 3] : n <= 15 ? [2, 4] : [3, 5];
   return {
     n,
-    target: Math.round(70 + 16 * (n - 1) + 0.6 * (n - 1) * (n - 1)),
+    target: Math.round(90 + 16 * (n - 1) + 0.6 * (n - 1) * (n - 1)),
     dayLength: Math.round(lerp(90, 150, t)),   // early levels are short and brisk
-    spawnEvery: lerp(6.5, 3, t),
-    patience: lerp(36, 16, t),
-    maxCustomers: n <= 2 ? 2 : n <= 7 ? 3 : 4,
+    spawnEvery: lerp(5.5, 3, t),
+    patience: lerp(30, 16, t),
+    maxCustomers: n <= 1 ? 2 : n <= 7 ? 3 : 4,
     maxMeat: n <= 5 ? 1 : n <= 12 ? 2 : 3,
     meats: n <= 3 ? ['asada'] : n <= 8 ? ['asada', 'pastor'] : MEATS,
     toppings: TOPS.slice(0, topsOnMenu),
@@ -438,6 +452,57 @@ try {
 const starsFor = (earned, target) => earned >= 2 * target ? 3 : earned >= 1.5 * target ? 2 : earned >= target ? 1 : 0;
 const starStr = (n, max = 3) => '★'.repeat(n) + '☆'.repeat(max - n);
 
+// ---------- Leaderboard ----------
+// Shared scores live in a Google Sheet behind an Apps Script web app (leaderboard/Code.gs, README).
+// Paste that deployment's URL here. Empty = scores stay on this device only.
+const LEADERBOARD_URL = '';
+let playerName = '', playerId = '', localScores = {}, boardCache = null, submittedLevel = 0;
+try {
+  playerName = localStorage.getItem('tacos.name') || '';
+  playerId = localStorage.getItem('tacos.id') || '';
+  localScores = JSON.parse(localStorage.getItem('tacos.scores') || '{}') || {};
+} catch (e) {}
+if (!playerId) { playerId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); try { localStorage.setItem('tacos.id', playerId); } catch (e) {} }
+const cleanName = s => String(s || '').replace(/[<>]/g, '').trim().slice(0, 20);
+function recordLocal(level, earned, stars) {
+  const cur = localScores[level];
+  if (!cur || earned > cur.earned) { localScores[level] = { earned, stars }; try { localStorage.setItem('tacos.scores', JSON.stringify(localScores)); } catch (e) {} }
+}
+async function submitScore(level, earned, stars) {
+  if (!LEADERBOARD_URL || !playerName || submittedLevel === level) return false;
+  submittedLevel = level;
+  try {
+    // text/plain keeps the request "simple" (no CORS preflight), which Apps Script requires.
+    await fetch(LEADERBOARD_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ id: playerId, name: playerName, level, earned, stars }) });
+    boardCache = null; return true;
+  } catch (e) { submittedLevel = 0; return false; }
+}
+async function fetchBoardRows() {
+  if (!LEADERBOARD_URL) return null;
+  if (boardCache && Date.now() - boardCache.t < 30000) return boardCache.rows;
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const r = await fetch(LEADERBOARD_URL, { redirect: 'follow', signal: ctrl.signal });
+    const rows = await r.json(); boardCache = { t: Date.now(), rows }; return rows;
+  } finally { clearTimeout(timer); }
+}
+// One row per player: best earnings per level summed, levels cleared, stars; latest name wins.
+function aggregate(rows) {
+  const by = {};
+  for (const r of rows) {
+    const id = String(r.id || ''), level = +r.level | 0, earned = +r.earned | 0, stars = +r.stars | 0;
+    if (!id || level < 1) continue;
+    const p = by[id] || (by[id] = { id, name: '', best: {} });
+    if (r.name) p.name = cleanName(r.name);
+    const b = p.best[level]; if (!b || earned > b.earned) p.best[level] = { earned, stars: Math.max(stars, b ? b.stars : 0) };
+  }
+  return Object.values(by).map(p => {
+    const lv = Object.values(p.best);
+    return { id: p.id, name: p.name || '?', total: lv.reduce((s, x) => s + x.earned, 0), levels: lv.filter(x => x.stars > 0).length, stars: lv.reduce((s, x) => s + x.stars, 0) };
+  }).sort((a, b) => b.total - a.total || b.stars - a.stars);
+}
+function myRows() { return Object.entries(localScores).map(([level, s]) => ({ id: playerId, name: playerName || T('you'), level: +level, earned: s.earned, stars: s.stars })); }
+
 // ---------- Helpers ----------
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 function gamePos(node) {
@@ -464,7 +529,8 @@ function handCost(h) { let c = BREAD_WASTE; for (const k in h.items) c += h.item
 function makeOrder() {
   const bread = pick(lvl.breads);
   const items = {}; items[pick(lvl.meats)] = 1 + rnd(lvl.maxMeat);
-  const k = lvl.topMin + rnd(lvl.topMax - lvl.topMin + 1);
+  // 1 in 20 guests wants just meat; everyone else asks for toppings
+  const k = Math.random() < .05 ? 0 : lvl.topMin + rnd(lvl.topMax - lvl.topMin + 1);
   shuffle(lvl.toppings).slice(0, k).forEach(t => { items[t] = (lvl.doubles && Math.random() < .25 && (t === 'queso' || t === 'guac')) ? 2 : 1; });
   let price = BREAD[bread].price; for (const i in items) price += items[i] * ING[i].price;
   return { bread, items, price };
@@ -639,6 +705,8 @@ function endDay() {
   if (success && day < MAX_LEVEL && unlocked < day + 1) { unlocked = day + 1; try { localStorage.setItem('tacos.unlocked', unlocked); } catch (e) {} }
   const st = success ? starsFor(dayEarned, lvl.target) : 0;
   if (st > (starsByLevel[day] || 0)) { starsByLevel[day] = st; try { localStorage.setItem('tacos.stars', JSON.stringify(starsByLevel)); } catch (e) {} }
+  submittedLevel = 0;
+  if (success) { recordLocal(day, dayEarned, st); submitScore(day, dayEarned, st); }
   $('#goalBanner').classList.remove('show');
   customers.forEach(c => c.el.remove()); customers = []; if (flies) { $('#tray-' + flies.tray).querySelector('.flies')?.remove(); flies = null; }
   setTimeout(() => showDayEnd(success, tooAngry), 500);
@@ -772,10 +840,12 @@ function showMenu() {
     <div class="sub" style="margin:0 0 8px;font-size:12px">${T('star1')} · ${T('star2')} · ${T('star3')}</div>
     ${bestDay ? `<div class="sub" style="margin:0 0 10px">${T('best')}: ${money$(bestDay)}</div>` : ''}
     <button class="big" id="startBtn">${T('start')} ${unlocked}</button>
+    <button class="ghost" id="boardBtn">🏆 ${T('board')}</button>
     <button class="ghost" id="langBtn2">${T('lang')}</button>
   </div>`;
   $('#startBtn').onclick = () => { ctx(); startDay(unlocked); };
   $$('.lvl:not(.locked)').forEach(b => b.onclick = () => { ctx(); startDay(+b.dataset.n); });
+  $('#boardBtn').onclick = showBoard;
   $('#langBtn2').onclick = toggleLang;
 }
 function showPause() {
@@ -799,11 +869,44 @@ function showDayEnd(success, tooAngry) {
       <div class="stat"><b>${money$(stats.waste)}</b><span>${T('trashCost')}</span></div>
     </div>
     <div class="sub">${T('total')}: ${money$(money)} · ${T('best')}: ${money$(bestDay)}</div>
+    ${success ? `<div class="namerow"><input id="nameIn" maxlength="20" placeholder="${T('yourName')}" value="${playerName.replace(/"/g, '&quot;')}" autocomplete="off"><button class="ghost" id="saveBtn" style="margin:0">${T('saveScore')}</button><span class="ok" id="savedLbl">${playerName ? `${T('saved')} ${playerName}` : ''}</span></div>` : ''}
     <button class="big" id="nextBtn">${success ? (king ? T('keepGoing') : T('next')) : T('retry')}</button>
+    <button class="ghost" id="boardBtn">🏆 ${T('board')}</button>
     <button class="ghost" id="menuBtn">${T('menu')}</button>
   </div>`;
   $('#nextBtn').onclick = () => king ? showMenu() : startDay(success ? day + 1 : day);
   $('#menuBtn').onclick = showMenu;
+  $('#boardBtn').onclick = showBoard;
+  const saveBtn = $('#saveBtn');
+  if (saveBtn) {
+    const save = () => {
+      const n = cleanName($('#nameIn').value); if (!n) { $('#nameIn').focus(); return; }
+      playerName = n; try { localStorage.setItem('tacos.name', n); } catch (e) {}
+      submittedLevel = 0; submitScore(day, dayEarned, starsFor(dayEarned, lvl.target));
+      $('#savedLbl').textContent = `${T('saved')} ${n}`;
+    };
+    saveBtn.onclick = save;
+    $('#nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') save(); e.stopPropagation(); });
+  }
+}
+async function showBoard() {
+  const prev = state === 'play' ? 'play' : state; if (state === 'play') togglePause();
+  state = state === 'pause' ? 'pause' : 'menu';
+  $('#overlay').classList.remove('hidden');
+  const render_ = (rows, note) => {
+    const list = aggregate(rows).slice(0, 25);
+    const body = list.length ? list.map((p, i) => `<tr class="${p.id === playerId ? 'me' : ''}"><td class="rank">${i + 1}</td><td>${p.name}${p.id === playerId ? ` <small>(${T('you')})</small>` : ''}</td><td class="n">${p.levels}</td><td class="n st">${p.stars}★</td><td class="n">${money$(p.total)}</td></tr>`).join('')
+      : `<tr><td colspan="5" style="text-align:center;opacity:.6">—</td></tr>`;
+    $('#overlay').innerHTML = `<div class="card"><h2>🏆 ${T('board')}</h2>
+      ${note ? `<div class="bnote">${note}</div>` : ''}
+      <div class="boardwrap"><table class="board"><thead><tr><th class="rank">#</th><th>${T('player')}</th><th class="n">${T('levelsCol')}</th><th class="n">${T('starsCol')}</th><th class="n">${T('totalCol')}</th></tr></thead><tbody>${body}</tbody></table></div>
+      <button class="big" id="backBtn">${T('back')}</button></div>`;
+    $('#backBtn').onclick = () => { if (prev === 'play') { state = 'pause'; showPause(); } else showMenu(); };
+  };
+  $('#overlay').innerHTML = `<div class="card"><h2>🏆 ${T('board')}</h2><div class="sub">${T('loading')}</div></div>`;
+  if (!LEADERBOARD_URL) { render_(myRows(), T('notConnected')); return; }
+  try { const rows = await fetchBoardRows(); render_(rows.concat(myRows()), ''); }
+  catch (e) { render_(myRows(), T('boardFail')); }
 }
 function togglePause() {
   if (state === 'play') { state = 'pause'; showPause(); $('#pauseBtn').textContent = T('resume'); }
@@ -934,6 +1037,7 @@ $('#fsBtn').addEventListener('click', async () => {
   } catch (e) { /* not supported (e.g. iOS Safari): the rotate hint still applies */ }
 });
 addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
   if (e.code === 'Space') { e.preventDefault(); togglePause(); }
   if (e.key === 'Enter' && state === 'play' && dayEarned >= lvl.target) endDay();
   if (e.key === 'm' || e.key === 'M') $('#muteBtn').click();
@@ -952,6 +1056,7 @@ requestAnimationFrame(tick);
 window.TacoNights = {
   step: dt => update(dt),
   startDay: n => startDay(n),
+  addEarned: n => { dayEarned += n; money += n; },
   snapshot: () => ({ state, day, dayEarned, timeLeft, strikes, tokens, hand, stock: { ...stock },
     portions: portions.map(p => p && { t: +p.t.toFixed(2), state: p.state, kind: p.kind }),
     customers: customers.map(c => ({ name: c.name, order: c.order, patience: +c.patience.toFixed(2), slot: c.slot })) }),

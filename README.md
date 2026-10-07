@@ -34,6 +34,19 @@ requests fullscreen in browsers that allow it.
 The claude.ai share link also works on a phone (landscape), but installs only as a bookmark,
 not as an offline app.
 
+## Leaderboard
+
+Players enter a name when they finish a level; the game then posts each cleared level (level,
+earnings, stars) and the Leaderboard screen ranks players by the sum of their best earnings per
+level. The shared store is a Google Sheet behind a Google Apps Script web app, which is free and
+needs no server. Follow the four setup steps at the top of `leaderboard/Code.gs` (create a sheet,
+paste the script, deploy as web app for "Anyone", paste the `/exec` URL into `LEADERBOARD_URL`
+in `index.html`). Until the URL is set, the board shows the player's own device only and says so.
+
+Players are identified by a random id stored in their browser, so renaming keeps their history.
+Names are capped at 20 characters and stripped of angle brackets both in the game and in the
+script; numbers are clamped server-side.
+
 ## How it plays
 
 - Customers arrive with a speech bubble: tortilla, meat and how many scoops, toppings, and the
@@ -66,14 +79,16 @@ Everything moves monotonically with the level number in `levelCfg(n)`:
 | | Level 1 | Level 10 | Level 20 |
 |---|---|---|---|
 | Toppings on the menu | 2 | 6 | 9 |
-| Toppings per order | 0–1 | 2–3 | 3–5 |
+| Toppings per order | 1 | 2–3 | 3–5 |
 | Meats / scoops | asada, 1 | asada + pastor, 2 | all three, up to 3 |
 | Tortillas | corn | corn, flour | all three |
 | Customers at once | 2 | 4 | 4 |
 | Shift length | 90 s | 118 s | 150 s |
-| Arrival every | 6.5 s | ~4.8 s | 3 s |
-| Patience | 36 s | ~27 s | 16 s |
-| Cash goal | $70 | $263 | $591 |
+| Arrival every | 5.5 s | ~4.3 s | 3 s |
+| Patience | 30 s | ~23 s | 16 s |
+| Cash goal | $90 | $283 | $611 |
+
+About 1 in 20 guests orders meat only; everyone else wants toppings.
 
 ## Tuning
 
