@@ -18,6 +18,22 @@
 :root{--acc:#ffd60a;--pink:#ff2d95;--cyan:#2ee6ff;--lime:#b6ff3b;--panel:#1e2a2f;--panel2:#15202a;--bg:#07080f;--fg:#fff;color-scheme:dark}
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#07080f;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;overflow:hidden;color:#fff;touch-action:manipulation;overscroll-behavior:none}
+/* compact = phone in landscape: shorter street, smaller customers, the counter gets the room */
+#game.compact{height:560px}
+.compact #street{height:160px}
+.compact #counter{top:216px}
+.compact .cust{zoom:.62}
+.compact .canopy span{font-size:11px}
+.compact #goalBanner{top:58px;font-size:12px}
+.compact .card{max-height:536px;overflow-y:auto;padding:14px 22px}
+.compact .card h1{font-size:30px}
+.compact .card .sub{margin:4px 0 8px;font-size:13px}
+.compact .steps{font-size:11px;line-height:1.3}
+.compact .steps li{margin:2px 0}
+.compact .lvls{margin:4px auto 6px}
+.compact .lvl{height:30px;font-size:12px}
+.compact .big{padding:9px 22px;font-size:15px}
+.compact .ghost{padding:7px 14px;font-size:13px}
 #rotate{position:fixed;inset:0;background:#07080f;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;font-weight:700}
 #rotate .ph{width:46px;height:80px;border:4px solid var(--acc);border-radius:10px;animation:rot 1.6s ease-in-out infinite alternate}
 @media (orientation:portrait) and (max-width:900px){#rotate{display:flex}}
@@ -122,7 +138,8 @@ button{font-family:inherit}
 .meatbin{width:120px;height:88px;border-radius:12px;cursor:pointer;background:var(--panel);border:2px solid #3b4a52;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:700;color:#e3e8ee;transition:border-color .15s,transform .1s}
 .meatbin:hover{border-color:var(--acc);transform:translateY(-2px)}
 .meatbin.locked{opacity:.3;pointer-events:none}
-.meatbin .ing{width:42px;height:42px}
+.meatbin .ing{width:50px;height:50px}
+.meatbin:active,.bread:active{transform:scale(.96)}
 .meatbin.sizzle{animation:bump .25s}
 
 #plancha{position:absolute;left:142px;top:32px;width:146px;height:280px;background:#1b1f24;border-radius:10px;border:3px solid #4a525b;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;box-shadow:inset 0 0 24px rgba(0,0,0,.8),0 0 18px #ff6a1a44}
@@ -161,12 +178,14 @@ button{font-family:inherit}
 #trash .label{font-size:11px;font-weight:700;color:#c9cdd8;margin-top:6px}
 #trash.drop .bin{animation:bump .25s}
 
-#trays{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;position:absolute;left:12px;top:32px;right:12px}
-.tray{background:var(--panel);border:2px solid #3b4a52;border-radius:12px;padding:7px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;transition:border-color .15s,transform .1s}
+#trays{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:absolute;left:12px;top:30px;right:12px}
+.tray{background:var(--panel);border:2px solid #3b4a52;border-radius:14px;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;position:relative;transition:border-color .15s,transform .1s}
 .tray:hover{border-color:var(--acc);transform:translateY(-2px)}
-.tray .ing{width:44px;height:44px}
-.tray .tname{font-size:9px;font-weight:700;color:#e3e8ee;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tray:active{transform:scale(.96)}
+.tray .ing{width:52px;height:52px}
+.tray .tname{font-size:11px;font-weight:700;color:#e3e8ee;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .tray .stock{font-size:11px;color:var(--acc);font-weight:700}
+.tray .ing b{font-size:12px}
 .tray.empty{opacity:.45}
 .tray.locked{opacity:.25;pointer-events:none}
 .tray.buzz{border-color:#ff3b4a}
@@ -176,9 +195,9 @@ button{font-family:inherit}
 .flies i:nth-child(2){left:60%;top:35%;animation-delay:-.4s;animation-duration:.9s}
 .flies i:nth-child(3){left:40%;top:60%;animation-delay:-.7s;animation-duration:1.3s}
 #tools{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:10px}
-.tool{flex:1;height:70px;border-radius:12px;background:var(--panel);border:2px solid #3b4a52;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 12px;color:#e3e8ee;font-weight:700;font-size:13px;position:relative;overflow:hidden;text-align:left}
+.tool{flex:1;height:54px;border-radius:12px;background:var(--panel);border:2px solid #3b4a52;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 10px;color:#e3e8ee;font-weight:700;font-size:13px;position:relative;overflow:hidden;text-align:left}
 .tool:hover{border-color:var(--acc)}
-.tool .ico{width:44px;height:44px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:24px}
+.tool .ico{width:38px;height:38px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:21px}
 #supplier .ico{background:var(--acc)}
 #fan .ico{background:var(--cyan)}
 #fan.spin .ico{animation:spin .6s linear}
@@ -280,7 +299,7 @@ button{font-family:inherit}
 
 <script>
 (() => {
-const W = 1100, H = 700;
+const W = 1100; let H = 700, compact = false;
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rnd = n => Math.floor(Math.random() * n);
@@ -351,7 +370,7 @@ const ING = {
   lime:     { en:'Lime',          es:'Limón',            he:'ליים',         price:1 },
 };
 const MEATS = ['asada', 'pastor', 'pollo'];
-const TOPS = ['cilantro','verde','queso','pico','roja','guac','crema','jalapeno','lime']; // in order of introduction
+const TOPS = ['cilantro','verde','queso','pico','guac','jalapeno']; // in order of introduction (6 = big tap targets)
 const MAX_LEVEL = 20;
 const lerp = (a, b, t) => a + (b - a) * clamp(t, 0, 1);
 
@@ -387,8 +406,8 @@ const RAW_T = 3, MAX_STOCK = 8, BURN_COST = 1, TOKEN_EVERY = 40, BREAD_WASTE = 1
 function levelCfg(n) {
   n = clamp(n, 1, MAX_LEVEL);
   const t = (n - 1) / (MAX_LEVEL - 1);
-  const topsOnMenu = n <= 2 ? 2 : n <= 4 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : n <= 10 ? 6 : n <= 13 ? 7 : n <= 16 ? 8 : 9;
-  const [topMin, topMax] = n === 1 ? [1, 1] : n <= 3 ? [1, 2] : n <= 6 ? [1, 2] : n <= 10 ? [2, 3] : n <= 15 ? [2, 4] : [3, 5];
+  const topsOnMenu = n <= 2 ? 2 : n <= 5 ? 3 : n <= 9 ? 4 : n <= 14 ? 5 : 6;
+  const [topMin, topMax] = n === 1 ? [1, 1] : n <= 6 ? [1, 2] : n <= 10 ? [2, 3] : n <= 15 ? [2, 4] : [3, 4];
   return {
     n,
     target: Math.round(90 + 16 * (n - 1) + 0.6 * (n - 1) * (n - 1)),
@@ -563,13 +582,15 @@ function avatarSVG(l) {
 }
 const MOUTH = { happy:'M30 46 Q40 56 50 46', meh:'M31 49 L49 49', angry:'M30 53 Q40 43 50 53' };
 
+// In compact mode .cust is zoomed, so its left is in zoomed px: screen centre must still be the slot x.
+const custLeft = slot => SLOT_X[lvl.maxCustomers][slot] / (compact ? .62 : 1) - 90;
 function spawn() {
   const used = new Set(customers.map(c => c.slot));
   const free = []; for (let i = 0; i < lvl.maxCustomers; i++) if (!used.has(i)) free.push(i);
   if (!free.length) return;
   const c = { id: ++custId, slot: pick(free), order: makeOrder(), patience: 1, maxP: lvl.patience * (.9 + Math.random() * .3), name: pick(NAMES), look: randomLook(), mood: 'happy', gone: false };
   const e = el('div', 'cust enter');
-  e.style.left = (SLOT_X[lvl.maxCustomers][c.slot] - 90) + 'px';
+  e.style.left = custLeft(c.slot) + 'px';
   e.innerHTML = `<div class="bubble">${orderHTML(c.order)}<div class="cname">${c.name}</div></div><div class="meter"><i></i></div><div class="avatar">${avatarSVG(c.look)}</div>`;
   e.addEventListener('click', () => onCustomer(c));
   $('#street').appendChild(e);
@@ -1020,7 +1041,15 @@ function buildStreet() {
 buildStreet();
 
 // ---------- Wiring ----------
-function fit() { const s = Math.min(innerWidth / W, innerHeight / H); $('#game').style.transform = `translate(-50%,-50%) scale(${s})`; }
+function fit() {
+  const wasCompact = compact;
+  compact = innerWidth / innerHeight > 1.6 && innerHeight < 600;   // a phone held sideways
+  H = compact ? 560 : 700;
+  $('#game').classList.toggle('compact', compact);
+  if (wasCompact !== compact && lvl) customers.forEach(c => { if (c.el) c.el.style.left = custLeft(c.slot) + 'px'; });
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  $('#game').style.transform = `translate(-50%,-50%) scale(${s})`;
+}
 addEventListener('resize', fit); fit();
 $('#trash').addEventListener('click', onTrash);
 $('#supplier').addEventListener('click', onSupplier);

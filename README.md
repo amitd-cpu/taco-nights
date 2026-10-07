@@ -28,7 +28,10 @@ server configured for the Claude desktop preview.
 Host the folder on any static HTTPS site (GitHub Pages, Netlify, a Cloud Run bucket, …) and open
 it on the phone. Android Chrome offers "Install app"; on iPhone use Share → "Add to Home Screen".
 The installed app opens fullscreen in landscape and keeps working offline. The game is designed
-for landscape; in portrait it shows a "turn your phone sideways" screen. The ⛶ button in the HUD
+for landscape; in portrait it shows a "turn your phone sideways" screen. On a phone-sized
+landscape viewport (wider than 1.6:1 and under 600 px tall) the game switches to a compact
+layout: a shorter street with smaller customers so the counter and its tap targets get about a
+quarter more screen. The ⛶ button in the HUD
 requests fullscreen in browsers that allow it.
 
 The claude.ai share link also works on a phone (landscape), but installs only as a bookmark,
@@ -58,8 +61,9 @@ script; numbers are clamped server-side.
   taco glows green and rings when it exactly matches a waiting customer; it turns red when no
   customer's order can still be satisfied. Trash costs the ingredients.
 - **Serve**: click the matching customer. Faster service = bigger tip (up to $4).
-- **Toppings**: onion-cilantro, salsa verde, queso, pico de gallo, salsa roja, guacamole, crema,
-  jalapeño, lime, introduced in that order across the levels. Trays hold 8; the prep cook
+- **Toppings**: onion-cilantro, salsa verde, queso, pico de gallo, guacamole, jalapeño,
+  introduced in that order across the levels. Six big tiles so they are easy to tap on a phone
+  (salsa roja, crema and lime are still drawn in `ICON` if you want them back in `TOPS`). Trays hold 8; the prep cook
   restocks in 2.5 s. From level 3 flies land on trays: a buzzing tray is unusable and after 8 s
   they spoil its stock. The fan shoos them.
 - **Speaker**: every $40 earned grants a song (max 3). It tops up patience and pauses arrivals
@@ -78,8 +82,8 @@ Everything moves monotonically with the level number in `levelCfg(n)`:
 
 | | Level 1 | Level 10 | Level 20 |
 |---|---|---|---|
-| Toppings on the menu | 2 | 6 | 9 |
-| Toppings per order | 1 | 2–3 | 3–5 |
+| Toppings on the menu | 2 | 4 | 6 |
+| Toppings per order | 1 | 2–3 | 3–4 |
 | Meats / scoops | asada, 1 | asada + pastor, 2 | all three, up to 3 |
 | Tortillas | corn | corn, flour | all three |
 | Customers at once | 2 | 4 | 4 |
